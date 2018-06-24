@@ -1,14 +1,31 @@
-hash: a47b774dc44623b0bc5da435b9f9bbb795bb80e08b495a6b9c24118087d1c341
-updated: 2018-06-22T18:35:46.174553+08:00
+hash: 9fca86124c96a92bc9b58dc8beb7bb6b564183545f7a4c1bac8923b4bc1a24e0
+updated: 2018-06-24T04:17:11.525012+08:00
 imports:
+- name: github.com/elgs/gosqljson
+  version: 027aa4915315a0b2825c0f025cea347829b974fa
+- name: github.com/go-sql-driver/mysql
+  version: d523deb1b23d913de5bdada721a6071e71283618
 - name: github.com/golang/protobuf
   version: b4deda0973fb4c70b50d226b1af49f3da59f5265
   subpackages:
+  - jsonpb
   - proto
+  - protoc-gen-go/descriptor
   - ptypes
   - ptypes/any
   - ptypes/duration
+  - ptypes/struct
   - ptypes/timestamp
+- name: github.com/googleapis/googleapis
+  version: 65f22d8e259783ea34fa66b0a467cd89ce8580fe
+- name: github.com/grpc-ecosystem/grpc-gateway
+  version: ee3ef70b7777cde4e61e4e224cb11e92beecee6a
+  subpackages:
+  - runtime
+  - runtime/internal
+  - utilities
+- name: github.com/op/go-logging
+  version: b2cb9fa56473e98db8caba80237377e83fe44db5
 - name: golang.org/x/net
   version: afe8f62b1d6bbd81f31868121a50b06d8188e1f9
   subpackages:
@@ -26,9 +43,14 @@ imports:
   - transform
   - unicode/bidi
   - unicode/norm
+- name: google.golang.org/appengine
+  version: b1f26356af11148e710935ed1ac8a7f5702c7612
+  subpackages:
+  - cloudsql
 - name: google.golang.org/genproto
   version: 80063a038e333bbe006c878e4c5ce4c74d055498
   subpackages:
+  - googleapis/api/annotations
   - googleapis/rpc/status
 - name: google.golang.org/grpc
   version: 168a6198bcb0ef175f7dacec0b8691fc141dc9b8

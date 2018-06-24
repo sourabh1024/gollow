@@ -9,3 +9,9 @@ import:
   - context
 - package: google.golang.org/grpc
   version: v1.13.0
+- package: github.com/googleapis/googleapis
+- package: github.com/op/go-logging
+  version: v1
+- package: github.com/go-sql-driver/mysql
+  version: v1.4.0
+- package: github.com/elgs/gosqljson

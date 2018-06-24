@@ -1,0 +1,5 @@
+Starting load of data
+2018/06/24 04:23:51 Number of pending requests : 1
+2018/06/24 04:23:51 Opened db connection to root:password@/surge_engine?parseTime=true
+2018/06/24 04:24:18 Length of data%!(EXTRA int=571206357)
+2018/06/24 04:24:18 Total time 27.288425022s
