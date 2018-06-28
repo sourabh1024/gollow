@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"encoding/json"
+	"gollow/logging"
 	"io/ioutil"
 	"sync"
 )
@@ -25,12 +26,12 @@ type MysqlConfig struct {
 func (config *MysqlConfig) Init() error {
 	bytes, err := ioutil.ReadFile("config.json")
 	if err != nil {
-		log.Error("Error in reading config file :+v", err)
+		logging.GetLogger().Error("Error in reading config file :+v", err)
 		return err
 	}
 	err = json.Unmarshal(bytes, config)
 	if err != nil {
-		log.Error("Error in reading config file :+v", err)
+		logging.GetLogger().Error("Error in reading config file :+v", err)
 		return err
 	}
 	return nil

@@ -1,5 +1,22 @@
-Starting load of data
-2018/06/24 04:23:51 Number of pending requests : 1
-2018/06/24 04:23:51 Opened db connection to root:password@/surge_engine?parseTime=true
-2018/06/24 04:24:18 Length of data%!(EXTRA int=571206357)
-2018/06/24 04:24:18 Total time 27.288425022s
+2018/06/26 22:42:43 Starting load of data
+2018/06/26 22:42:43 Number of pending requests : 1
+2018/06/26 22:42:43 Opened db connection to root:password@/surge_engine?parseTime=true
+2018/06/26 22:42:53 Starting converting of data
+2018/06/26 22:42:53 Length of data returned from DB : 2001110
+2018/06/26 22:42:53 Size of data returned  from DB : 24
+2018/06/26 22:42:54 Length of result returned from DB : 2001110
+2018/06/26 22:42:54 Size of result returned from DB : 24
+2018/06/26 22:42:54 Type of result returned from DB : &{24 8 1530124318 2 8 8 23 20249664 19275744 63154 0}
+2018/06/26 22:42:54 mem alloc : %!(EXTRA uint64=567109392)
+2018/06/26 22:42:54 mem total alloc : %!(EXTRA uint64=1988895424)
+2018/06/26 22:42:54 mem heap alloc : %!(EXTRA uint64=567109392)
+2018/06/26 22:42:54 mem heap size%!(EXTRA uint64=807206912)
+2018/06/26 22:42:54 HeatMapDataConverting lasted 594.942933ms
+2018/06/26 22:42:54 HeatMapDataFetchFromSQL lasted 10.583264558s
+2018/06/26 22:42:54 length of data returned  :%!(EXTRA int=4002220)
+2018/06/26 22:42:54 Size of data returned  :%!(EXTRA uintptr=24)
+2018/06/26 22:42:54 type of data returned  :%!(EXTRA *reflect.rtype=[]sources.DataModel)
+2018/06/26 22:42:54 mem alloc : %!(EXTRA uint64=567113360)
+2018/06/26 22:42:54 mem total alloc : %!(EXTRA uint64=1988899392)
+2018/06/26 22:42:54 mem heap alloc : %!(EXTRA uint64=567113360)
+2018/06/26 22:42:54 mem heap size%!(EXTRA uint64=807206912)

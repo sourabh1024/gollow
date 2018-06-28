@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-//TODO : go thtough this file once
+//TODO : go through this file once
 // Definition of all the errors that the Data Layer might return
 // Inspired by database/sql
 var (

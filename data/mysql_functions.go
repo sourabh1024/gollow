@@ -5,14 +5,12 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/op/go-logging"
 	"golang.org/x/net/context"
+	"gollow/logging"
 	"reflect"
 	"sync"
 	"sync/atomic"
 )
-
-var log = logging.MustGetLogger("gollow")
 
 const (
 	tagSQLCol       = "sql-col"
@@ -69,7 +67,7 @@ var getDatabase = func(config *MysqlConfig) (db *sql.DB, err error) {
 	config.ConnectOnce.Do(connect)
 
 	if err != nil {
-		log.Error("Create DB error : %+v", err)
+		logging.GetLogger().Error("Create DB error : %+v", err)
 		return nil, err
 	}
 
@@ -87,14 +85,14 @@ var createDBConn = func(config *MysqlConfig) (db *sql.DB, err error) {
 	db, err = sql.Open("mysql", config.Dsn)
 
 	if err != nil {
-		log.Error("Failed to open database connection. Error : ", err)
+		logging.GetLogger().Error("Failed to open database connection. Error : ", err)
 		return
 	}
 
 	db.SetMaxIdleConns(config.MaxIdle)
 	db.SetMaxOpenConns(config.MaxOpen)
 
-	log.Info("Opened db connection to %s", config.Dsn)
+	logging.GetLogger().Info("Opened db connection to %s", config.Dsn)
 	// store connection for later reuse
 	setDB(config, db)
 	return
@@ -117,7 +115,7 @@ func (mySqlConnection *mySqlConnectionImpl) NativeQueryRows(ctx context.Context,
 
 	pendingRequests := atomic.AddInt64(&config.PendingCalls, 1)
 	defer atomic.AddInt64(&config.PendingCalls, -1)
-	log.Info("Number of pending requests : %d", pendingRequests)
+	logging.GetLogger().Info("Number of pending requests : %d", pendingRequests)
 
 	db, err := getDatabase(config)
 
@@ -128,7 +126,7 @@ func (mySqlConnection *mySqlConnectionImpl) NativeQueryRows(ctx context.Context,
 	rows, err := db.QueryContext(ctx, query, args...)
 
 	if err != nil {
-		log.Error("Error in executing query context ", err)
+		logging.GetLogger().Error("Error in executing query context ", err)
 		return nil, err
 	}
 
@@ -167,7 +165,7 @@ func (mySqlConnection *mySqlConnectionImpl) NativeQueryRows(ctx context.Context,
 		err := rows.Scan(oneRow...)
 
 		if err != nil {
-			log.Warning("load relations failed to scan row", err)
+			logging.GetLogger().Warning("load relations failed to scan row", err)
 			return nil, err
 		}
 

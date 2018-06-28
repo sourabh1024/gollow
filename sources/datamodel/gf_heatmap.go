@@ -2,19 +2,22 @@ package datamodel
 
 import (
 	"context"
-	"fmt"
-	"github.com/op/go-logging"
 	"gollow/config"
 	"gollow/data"
+	"gollow/logging"
+	"gollow/sources"
+	"gollow/util/profile"
+	"reflect"
 	"strconv"
 	"time"
 )
 
-var log = logging.MustGetLogger("gollow")
+//HeatMapDataRef is the reference object for HeatMap Data
+var HeatMapDataRef = &HeatMapData{}
 
 //HeatMapData is the DataModelName being loaded
 type HeatMapData struct {
-	ID             int64     `sql-col:"id" sql-key:"id" sql-insert:"false"`
+	ID             int64     `sql-col:"id" sql-key:"id" sql-insert:"false" primary-key:"true"`
 	VehicleTypeID  int64     `sql-col:"vehicle_type_id"`
 	Start          time.Time `sql-col:"start_time"`
 	End            time.Time `sql-col:"end_time"`
@@ -30,40 +33,88 @@ type HeatMapData struct {
 	Version        string    `sql-col:"version"`
 }
 
-// GetID implements the data.Entity interface.
-func (hd *HeatMapData) GetID() string {
-	return strconv.FormatInt(hd.ID, 10)
-}
-
-// SetID implements the data.Entity interface.
-func (hd *HeatMapData) SetID(ID string) {
-	id, err := strconv.ParseInt(ID, 10, 64)
-	if err != nil {
-		log.Error("Error parsing heatmap data id: %v", err)
-		return
-	}
-	hd.ID = id
-}
+//////////////////////////////////////////////////////////////////
+///////////// Implement data.Entity interface ////////////////////
+//////////////////////////////////////////////////////////////////
 
 // NewEntity implements the data.Entity interface.
 func (hd HeatMapData) NewEntity() data.Entity {
 	return &HeatMapData{}
 }
 
-var HeatMapDataRef = &HeatMapData{}
+//GetNameSpace implements the data.Entity interface
+func (hd HeatMapData) GetNameSpace() string {
+	return "test-consumer-group1"
+}
 
-func (heatmapData *HeatMapData) LoadAll() {
+//GetPrimaryKey implements the data.Entity interface
+func (hd HeatMapData) GetPrimaryKey() string {
+	return strconv.FormatInt(hd.ID, 10)
+}
 
-	start := time.Now()
-	fmt.Println("Starting load of data")
+//GetDataName implements the data.Entity interface
+func (hd HeatMapData) GetDataName() string {
+	return "heatmap_data"
+}
+
+//////////////////////////////////////////////////////////////////
+///////////// End of Implement data.Entity interface /////////////
+//////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////
+///////////// Implement producer.DataProducer interface /////////////
+//////////////////////////////////////////////////////////////////
+
+func (hd *HeatMapData) CacheDuration() int64 {
+	return int64(time.Duration(5 * time.Second))
+}
+
+func (hd *HeatMapData) LoadAll() interface{} {
+
+	defer profile.Duration(time.Now(), "HeatMapDataFetchFromSQL")
+	logging.GetLogger().Info("Starting load of data")
+
+	//TODO : Remove this from here
 	config.Init()
-	query := "SELECT * FROM heatmap_data"
+
+	var result []sources.DataModel
+
+	query := "SELECT * FROM heatmap_small"
 	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.MySQLConfig, query, &HeatMapData{})
 
 	if err != nil {
-		log.Error("Error in fetching data from DB : ", err)
+		logging.GetLogger().Error("Error in fetching data from DB : ", err)
+		return result
 	}
 
-	log.Info("Length of data", len(entities))
-	log.Info("Total time taken : %s", time.Since(start))
+	defer profile.Duration(time.Now(), "HeatMapDataConverting")
+	logging.GetLogger().Info("Starting converting of data")
+
+	lenResult := len(entities)
+	logging.GetLogger().Info("Length of data returned from DB : %d ", lenResult)
+	logging.GetLogger().Info("Size of data returned  from DB : %d ", reflect.TypeOf(entities).Size())
+
+	result = make([]sources.DataModel, lenResult)
+
+	for i := 0; i < lenResult; i++ {
+		entity, ok := entities[i].(*HeatMapData)
+
+		if !ok {
+			logging.GetLogger().Error("Error in typecasting the results , err: ", err)
+			continue
+		}
+
+		result[i] = entity
+	}
+
+	logging.GetLogger().Info("Length of result returned from DB : %d ", lenResult)
+	logging.GetLogger().Info("Size of result returned from DB : %d ", reflect.TypeOf(result).Size())
+	logging.GetLogger().Info("Type of result returned from DB : %d ", reflect.TypeOf(result))
+
+	profile.GetMemoryProfile()
+	return result
 }
+
+//////////////////////////////////////////////////////////////////
+///////////// End of Implement data.Producer interface /////////////
+//////////////////////////////////////////////////////////////////
