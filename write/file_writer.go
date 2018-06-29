@@ -14,16 +14,16 @@ func (f *FileWriter) GetFullPath() string {
 	return f.FilePath + f.FileName
 }
 
-func (f *FileWriter) IsExist() bool {
-	if _, err := os.Stat(f.GetFullPath()); os.IsExist(err) {
+func (f *FileWriter) IsExist(path string) bool {
+	if _, err := os.Stat(path); os.IsExist(err) {
 		return true
 	}
 	return false
 }
 
-func (f *FileWriter) Write(data []byte) (int, error) {
+func (f *FileWriter) Write(path string, data []byte) (int, error) {
 
-	file, err := os.Create(f.GetFullPath())
+	file, err := os.Create(path)
 	if err != nil {
 		return 0, err
 	}
@@ -31,9 +31,9 @@ func (f *FileWriter) Write(data []byte) (int, error) {
 	return file.Write(data)
 }
 
-func (f *FileWriter) Read() ([]byte, error) {
+func (f *FileWriter) Read(path string) ([]byte, error) {
 
-	file, err := os.Open(f.GetFullPath())
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}

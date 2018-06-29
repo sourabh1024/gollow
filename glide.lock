@@ -1,5 +1,5 @@
-hash: 9fca86124c96a92bc9b58dc8beb7bb6b564183545f7a4c1bac8923b4bc1a24e0
-updated: 2018-06-24T04:17:11.525012+08:00
+hash: 6c736a3d0d8aba2300165ce9d02334c7475c969fb721f845980e632ceacdacd2
+updated: 2018-06-29T17:34:28.542986+08:00
 imports:
 - name: github.com/elgs/gosqljson
   version: 027aa4915315a0b2825c0f025cea347829b974fa
@@ -17,7 +17,7 @@ imports:
   - ptypes/struct
   - ptypes/timestamp
 - name: github.com/googleapis/googleapis
-  version: 65f22d8e259783ea34fa66b0a467cd89ce8580fe
+  version: 6a3277c0656219174ff7c345f31fb20a90b30b97
 - name: github.com/grpc-ecosystem/grpc-gateway
   version: ee3ef70b7777cde4e61e4e224cb11e92beecee6a
   subpackages:
@@ -26,6 +26,8 @@ imports:
   - utilities
 - name: github.com/op/go-logging
   version: b2cb9fa56473e98db8caba80237377e83fe44db5
+- name: github.com/stackimpact/stackimpact-go
+  version: 4527daa58297dc6de4c63654cc6c32f0e6b1af74
 - name: golang.org/x/net
   version: afe8f62b1d6bbd81f31868121a50b06d8188e1f9
   subpackages:

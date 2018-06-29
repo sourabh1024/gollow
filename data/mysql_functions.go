@@ -81,7 +81,7 @@ var getDatabase = func(config *MysqlConfig) (db *sql.DB, err error) {
 }
 
 var createDBConn = func(config *MysqlConfig) (db *sql.DB, err error) {
-
+	logging.GetLogger().Info("[DB] Opening DB connections ")
 	db, err = sql.Open("mysql", config.Dsn)
 
 	if err != nil {

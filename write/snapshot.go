@@ -3,29 +3,33 @@ package write
 type SnapshotWriter interface {
 
 	//IsExist checks whether the file exists
-	IsExist() bool
+	IsExist(path string) bool
 
 	//Write writes the given byte array
-	Write(data []byte) (int, error)
+	Write(path string, data []byte) (int, error)
 }
 
 type SnapshotReader interface {
 
 	//Read reads the given snapshot
-	Read() ([]byte, error)
+	Read(path string) ([]byte, error)
 }
 
-func WriteSnapshot(writer SnapshotWriter, data []byte) (int, error) {
+type SnapshotReaderWriter interface {
+	SnapshotReader
+	SnapshotWriter
+}
 
-	if ok := writer.IsExist(); ok {
+func WriteSnapshot(writer SnapshotWriter, path string, data []byte) (int, error) {
+
+	if ok := writer.IsExist(path); ok {
 		return 0, ErrFileAlreadyExists
 	}
 
-	return writer.Write(data)
+	return writer.Write(path, data)
 }
 
-func ReadSnapshot(reader SnapshotReader) ([]byte, error) {
+func ReadSnapshot(reader SnapshotReader, path string) ([]byte, error) {
 
-	return reader.Read()
+	return reader.Read(path)
 }
-

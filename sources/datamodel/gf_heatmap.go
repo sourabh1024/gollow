@@ -6,6 +6,7 @@ import (
 	"gollow/data"
 	"gollow/logging"
 	"gollow/sources"
+	"gollow/util"
 	"gollow/util/profile"
 	"reflect"
 	"strconv"
@@ -69,9 +70,9 @@ func (hd *HeatMapData) CacheDuration() int64 {
 	return int64(time.Duration(5 * time.Second))
 }
 
-func (hd *HeatMapData) LoadAll() interface{} {
+func (hd *HeatMapData) LoadAll() (interface{}, error) {
 
-	defer profile.Duration(time.Now(), "HeatMapDataFetchFromSQL")
+	defer util.Duration(time.Now(), "HeatMapDataFetchFromSQL")
 	logging.GetLogger().Info("Starting load of data")
 
 	//TODO : Remove this from here
@@ -79,15 +80,15 @@ func (hd *HeatMapData) LoadAll() interface{} {
 
 	var result []sources.DataModel
 
-	query := "SELECT * FROM heatmap_small"
+	query := "SELECT * FROM heatmap_data"
 	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.MySQLConfig, query, &HeatMapData{})
 
 	if err != nil {
 		logging.GetLogger().Error("Error in fetching data from DB : ", err)
-		return result
+		return result, err
 	}
 
-	defer profile.Duration(time.Now(), "HeatMapDataConverting")
+	defer util.Duration(time.Now(), "HeatMapDataConverting")
 	logging.GetLogger().Info("Starting converting of data")
 
 	lenResult := len(entities)
@@ -112,7 +113,7 @@ func (hd *HeatMapData) LoadAll() interface{} {
 	logging.GetLogger().Info("Type of result returned from DB : %d ", reflect.TypeOf(result))
 
 	profile.GetMemoryProfile()
-	return result
+	return result, nil
 }
 
 //////////////////////////////////////////////////////////////////

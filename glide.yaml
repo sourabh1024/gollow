@@ -15,3 +15,5 @@ import:
 - package: github.com/go-sql-driver/mysql
   version: v1.4.0
 - package: github.com/elgs/gosqljson
+- package: github.com/stackimpact/stackimpact-go
+  version: v2.3.9
