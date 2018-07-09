@@ -13,17 +13,3 @@ type DataProducer interface {
 	//Load All loads all the dataModel
 	LoadAll() (interface{}, error)
 }
-
-func ProduceDataSource() {
-
-	/*
-	 1. Get the previous announced version of the data.
-	 2. De-Serialize and create back the old object
-	 3. Load the current data from the data source
-	 4. Get the diff of the data.
-	 5. Serialize and create the new snapshot
-	 6. Create the diff
-	 7. Update the announced version
-	*/
-
-}

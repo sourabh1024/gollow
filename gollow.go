@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
+	"encoding/gob"
 	"github.com/stackimpact/stackimpact-go"
+	"gollow/logging"
 	"gollow/producer"
-	snapshot2 "gollow/snapshot"
 	"gollow/sources/datamodel"
 	"gollow/write"
 	"time"
@@ -20,7 +20,7 @@ func main() {
 	span := agent.Profile()
 	defer span.Stop()
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
 
 		// Start CPU profiler.
 		agent.StartCPUProfiler()
@@ -75,16 +75,19 @@ func main() {
 		file := &write.FileWriter{
 			FilePath: "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
 		}
+		//
+		//snapshot, _ := json.Marshal(&snapshot2.Snapshot{
+		//	AnnouncedSnapshot: map[string]string{
+		//		"version": "1.0.0",
+		//	},
+		//})
+		//
+		//file.Write("/Users/sourabh.suman/gopath/src/gollow/snapshots/announced.version", snapshot)
 
-		snapshot, _ := json.Marshal(&snapshot2.Snapshot{
-			AnnouncedSnapshot: map[string]string{
-				"version": "1.0.0",
-			},
-		})
-
-		file.Write("/Users/sourabh.suman/gopath/src/gollow/snapshots/announced.version", snapshot)
+		gob.Register(&datamodel.HeatMapData{})
 		producer.Producer(file, "/Users/sourabh.suman/gopath/src/gollow/snapshots/announced.version", &datamodel.HeatMapData{})
 
+		logging.GetLogger().Info("complete")
 		agent.StopCPUProfiler()
 		agent.StopBlockProfiler()
 	}

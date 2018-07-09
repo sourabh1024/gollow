@@ -17,3 +17,4 @@ import:
 - package: github.com/elgs/gosqljson
 - package: github.com/stackimpact/stackimpact-go
   version: v2.3.9
+- package: github.com/mitchellh/mapstructure

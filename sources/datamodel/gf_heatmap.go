@@ -18,20 +18,20 @@ var HeatMapDataRef = &HeatMapData{}
 
 //HeatMapData is the DataModelName being loaded
 type HeatMapData struct {
-	ID             int64     `sql-col:"id" sql-key:"id" sql-insert:"false" primary-key:"true"`
-	VehicleTypeID  int64     `sql-col:"vehicle_type_id"`
-	Start          time.Time `sql-col:"start_time"`
-	End            time.Time `sql-col:"end_time"`
-	Geohash        string    `sql-col:"geohash"`
-	UnmetDemand    int       `sql-col:"unmet_demand"`
-	TotalDemand    int       `sql-col:"total_demand"`
-	Imbalance      int       `sql-col:"imbalance"`
-	Surge          float64   `sql-col:"surge"`
-	Score          float64   `sql-col:"score"`
-	Sources        string    `sql-col:"sources"`
-	IsOverSupplied bool      `sql-col:"is_over_supplied"`
-	IsShown        bool      `sql-col:"is_shown"`
-	Version        string    `sql-col:"version"`
+	ID             int64     `sql-col:"id" sql-key:"id" sql-insert:"false" primary-key:"true" json:"id"`
+	VehicleTypeID  int64     `sql-col:"vehicle_type_id" json:"vehicle_type_id"`
+	Start          time.Time `sql-col:"start_time" json:"start"`
+	End            time.Time `sql-col:"end_time" json:"end"`
+	Geohash        string    `sql-col:"geohash" json:"geohash"`
+	UnmetDemand    int       `sql-col:"unmet_demand" json:"unmet_demand"`
+	TotalDemand    int       `sql-col:"total_demand" json:"total_demand"`
+	Imbalance      int       `sql-col:"imbalance" json:"imbalance"`
+	Surge          float64   `sql-col:"surge" json:"surge"`
+	Score          float64   `sql-col:"score" json:"score"`
+	Sources        string    `sql-col:"sources" json:"sources"`
+	IsOverSupplied bool      `sql-col:"is_over_supplied" json:"is_over_supplied"`
+	IsShown        bool      `sql-col:"is_shown" json:"is_shown"`
+	Version        string    `sql-col:"version" json:"version"`
 }
 
 //////////////////////////////////////////////////////////////////
@@ -65,6 +65,10 @@ func (hd HeatMapData) GetDataName() string {
 //////////////////////////////////////////////////////////////////
 ///////////// Implement producer.DataProducer interface /////////////
 //////////////////////////////////////////////////////////////////
+
+func (hd HeatMapData) NewDataRef() sources.DataModel {
+	return &HeatMapData{}
+}
 
 func (hd *HeatMapData) CacheDuration() int64 {
 	return int64(time.Duration(5 * time.Second))
@@ -115,6 +119,24 @@ func (hd *HeatMapData) LoadAll() (interface{}, error) {
 	profile.GetMemoryProfile()
 	return result, nil
 }
+
+//func (hd *HeatMapData) MarshalJSON() ([]byte, error) {
+//	if hd.ID%10000 == 0 {
+//		logging.GetLogger().Info("Marshalling : ", hd.GetPrimaryKey())
+//	}
+//	return json.Marshal(hd)
+//}
+//
+//func (hd *HeatMapData) UnmarshalJSON(data []byte) error {
+//	err := json.Unmarshal(data, &hd)
+//	if err != nil {
+//		logging.GetLogger().Error(" Error in unmarshalling  : ", err)
+//	}
+//	if hd.ID%10000 == 0 {
+//		logging.GetLogger().Info("UnMarshalling : ", hd.GetPrimaryKey())
+//	}
+//	return nil
+//}
 
 //////////////////////////////////////////////////////////////////
 ///////////// End of Implement data.Producer interface /////////////

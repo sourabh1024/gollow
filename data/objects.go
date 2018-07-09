@@ -17,6 +17,5 @@ type Entity interface {
 	// it must be unique and collision would lead to unexpected data
 	GetPrimaryKey() string
 
-	// NewEntity creates an instance of the entity
 	NewEntity() Entity
 }
