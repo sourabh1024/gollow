@@ -4,10 +4,6 @@ package api;
 
 import "google/api/annotations.proto";
 
-message PingMessage {
-    string greeting = 1;
-}
-
 service Ping {
     rpc SayHello(PingMessage) returns (PingMessage) {
         option (google.api.http) = {
@@ -15,4 +11,23 @@ service Ping {
       body: "*"
     };
     }
+
+    rpc GetAnnouncedVersion(AnnouncedVersionRequest) returns (AnnouncedVersionResponse) {
+        option (google.api.http)  = {
+            get :"/getAnnouncedVersion"
+        };
+    }
+}
+
+message PingMessage {
+    string greeting = 1;
+}
+
+message AnnouncedVersionRequest {
+    string namespace = 1;
+    string entity = 2;
+}
+
+message AnnouncedVersionResponse {
+    string currentversion =1;
 }

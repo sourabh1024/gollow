@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/gob"
 	"github.com/stackimpact/stackimpact-go"
 	"gollow/logging"
 	"gollow/producer"
 	"gollow/sources/datamodel"
-	"gollow/write"
+	"gollow/storage"
 	"time"
 )
 
@@ -45,7 +44,7 @@ func main() {
 		//}
 		//
 		//logging.GetLogger().Info(data[0].GetNameSpace() + "-" + data[0].GetDataName())
-		//file := &write.FileWriter{
+		//file := &storage.FileWriter{
 		//	FilePath: "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
 		//	FileName: data[0].GetNameSpace() + "-" + data[0].GetDataName() + "-" + time.Now().String(),
 		//}
@@ -55,14 +54,14 @@ func main() {
 		//if err != nil {
 		//	logging.GetLogger().Error("Marshalling error : ", err)
 		//}
-		//_, err = write.WriteSnapshot(file, file.GetFullPath(), marshalData)
+		//_, err = storage.WriteSnapshot(file, file.GetFullPath(), marshalData)
 		//
 		//if err != nil {
 		//	logging.GetLogger().Error("Err in writing : ", err)
 		//}
 		//
 		//var response []datamodel.HeatMapData
-		//marshalData, err = write.ReadSnapshot(file, file.GetFullPath())
+		//marshalData, err = storage.ReadSnapshot(file, file.GetFullPath())
 		//
 		//if err != nil {
 		//	logging.GetLogger().Error("Error in fetching the data from snapshot : ", err)
@@ -72,9 +71,9 @@ func main() {
 		//
 		//logging.GetLogger().Info("Length of unmarshalled data : ", len(response))
 
-		file := &write.FileWriter{
-			FilePath: "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
-		}
+		//file := &storage.FileWriter{
+		//	FilePath: "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
+		//}
 		//
 		//snapshot, _ := json.Marshal(&snapshot2.Snapshot{
 		//	AnnouncedSnapshot: map[string]string{
@@ -84,8 +83,11 @@ func main() {
 		//
 		//file.Write("/Users/sourabh.suman/gopath/src/gollow/snapshots/announced.version", snapshot)
 
-		gob.Register(&datamodel.HeatMapData{})
-		producer.Producer(file, "/Users/sourabh.suman/gopath/src/gollow/snapshots/announced.version", &datamodel.HeatMapData{})
+		//gob.Register(&datamodel.HeatMapData{})
+
+		announcedFileName := "announced.version"
+		announcedVersionStorage := storage.NewFileStorage(announcedFileName)
+		producer.Producer(announcedVersionStorage, &datamodel.HeatMapData{})
 
 		logging.GetLogger().Info("complete")
 		agent.StopCPUProfiler()

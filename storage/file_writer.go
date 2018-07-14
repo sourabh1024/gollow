@@ -1,11 +1,13 @@
-package write
+package storage
 
 import (
 	"io/ioutil"
 	"os"
+	"sync"
 )
 
 type FileWriter struct {
+	sync.RWMutex
 	FilePath string
 	FileName string
 }
@@ -22,7 +24,8 @@ func (f *FileWriter) IsExist(path string) bool {
 }
 
 func (f *FileWriter) Write(path string, data []byte) (int, error) {
-
+	f.Lock()
+	defer f.Unlock()
 	file, err := os.Create(path)
 	if err != nil {
 		return 0, err
@@ -32,7 +35,8 @@ func (f *FileWriter) Write(path string, data []byte) (int, error) {
 }
 
 func (f *FileWriter) Read(path string) ([]byte, error) {
-
+	f.RLock()
+	defer f.RUnlock()
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err

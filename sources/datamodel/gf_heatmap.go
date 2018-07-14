@@ -71,7 +71,7 @@ func (hd HeatMapData) NewDataRef() sources.DataModel {
 }
 
 func (hd *HeatMapData) CacheDuration() int64 {
-	return int64(time.Duration(5 * time.Second))
+	return int64(time.Duration(2 * time.Minute))
 }
 
 func (hd *HeatMapData) LoadAll() (interface{}, error) {
@@ -84,7 +84,7 @@ func (hd *HeatMapData) LoadAll() (interface{}, error) {
 
 	var result []sources.DataModel
 
-	query := "SELECT * FROM heatmap_data"
+	query := "SELECT * FROM heatmap_a"
 	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.MySQLConfig, query, &HeatMapData{})
 
 	if err != nil {
@@ -119,24 +119,6 @@ func (hd *HeatMapData) LoadAll() (interface{}, error) {
 	profile.GetMemoryProfile()
 	return result, nil
 }
-
-//func (hd *HeatMapData) MarshalJSON() ([]byte, error) {
-//	if hd.ID%10000 == 0 {
-//		logging.GetLogger().Info("Marshalling : ", hd.GetPrimaryKey())
-//	}
-//	return json.Marshal(hd)
-//}
-//
-//func (hd *HeatMapData) UnmarshalJSON(data []byte) error {
-//	err := json.Unmarshal(data, &hd)
-//	if err != nil {
-//		logging.GetLogger().Error(" Error in unmarshalling  : ", err)
-//	}
-//	if hd.ID%10000 == 0 {
-//		logging.GetLogger().Info("UnMarshalling : ", hd.GetPrimaryKey())
-//	}
-//	return nil
-//}
 
 //////////////////////////////////////////////////////////////////
 ///////////// End of Implement data.Producer interface /////////////

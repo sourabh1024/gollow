@@ -1,4 +1,4 @@
-package write
+package storage
 
 type SnapshotWriter interface {
 

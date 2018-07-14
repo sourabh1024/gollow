@@ -7,7 +7,7 @@ for being produced
 
 type DataProducer interface {
 
-	//CacheDuration should return how long data can be cached in seconds
+	//CacheDuration should return how long data can be cached in nanoseconds
 	CacheDuration() int64
 
 	//Load All loads all the dataModel
