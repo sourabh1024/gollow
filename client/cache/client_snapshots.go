@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"golang.org/x/net/context"
 	"gollow/api"
-	"gollow/diff"
+	"gollow/core"
+	"gollow/core/snapshot"
 	"gollow/logging"
 	"gollow/producer"
-	"gollow/snapshot"
 	"gollow/sources"
 	"gollow/storage"
 	"gollow/util"
@@ -64,9 +64,9 @@ func FetchSnapshot(c api.PingClient, source sources.DataModel) {
 
 		for _, diffName := range diffs {
 			logging.GetLogger().Info("Reading diff : ", diffName)
-			diffManager := storage.NewFileStorage(diffName)
+			diffManager := storage.NewStorage(diffName)
 			data, err := diffManager.Read()
-			d := diff.GetNewDiffObj("", "")
+			d := &core.DiffObject{}
 			err = json.Unmarshal(data, &d)
 			if err != nil {
 				logging.GetLogger().Error("Error in Unmarshalling : ", err)
@@ -79,7 +79,7 @@ func FetchSnapshot(c api.PingClient, source sources.DataModel) {
 	}
 }
 
-func applyDiff(source sources.DataModel, d *diff.Diff) {
+func applyDiff(source sources.DataModel, d *core.DiffObject) {
 
 	defer util.Duration(time.Now(), "applydiff")
 	logging.GetLogger().Info("applying diff : ", d.Namespace)
@@ -118,7 +118,7 @@ func applyDiff(source sources.DataModel, d *diff.Diff) {
 		GetHeatMapDataInstance().SetValue(object.GetPrimaryKey(), object)
 	}
 
-	logging.GetLogger().Info("Changed Objects udated in the map")
+	logging.GetLogger().Info("Changed Objects updated in the map")
 
 	missingKeys := d.MissingKeys
 
@@ -141,7 +141,7 @@ func getDiffBetweenVersions(source sources.DataModel, version1, version2 string)
 
 	diffs := make([]string, 0)
 	for i := v1; i < v2; i++ {
-		diffs = append(diffs, diff.GetDiffName(source, v1, i+1))
+		diffs = append(diffs, core.DiffObjectDao.GetDiffName(source, v1, i+1))
 		v1 = i
 	}
 

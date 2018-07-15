@@ -2,7 +2,7 @@ package api
 
 import (
 	"golang.org/x/net/context"
-	"gollow/interactors/announced_versions"
+	"gollow/core"
 	"gollow/logging"
 	"log"
 )
@@ -19,7 +19,7 @@ func (s *Server) SayHello(ctx context.Context, in *PingMessage) (*PingMessage, e
 
 // SayHello generates response to a Ping request
 func (s *Server) GetAnnouncedVersion(ctx context.Context, in *AnnouncedVersionRequest) (*AnnouncedVersionResponse, error) {
-	version, err := announced_versions.GetAnnouncedVersions(ctx, in.Namespace, in.Entity)
+	version, err := core.GetAnnouncedVersions(ctx, in.Namespace, in.Entity)
 	if err != nil {
 		logging.GetLogger().Error("Error in getting announced version : ", err)
 		return &AnnouncedVersionResponse{}, err

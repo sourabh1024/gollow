@@ -18,3 +18,7 @@ import:
 - package: github.com/stackimpact/stackimpact-go
   version: v2.3.9
 - package: github.com/mitchellh/mapstructure
+- package: github.com/stretchr/testify
+  version: v1.2.2
+  subpackages:
+  - mock

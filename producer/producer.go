@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gollow/diff"
+	"gollow/core"
+	"gollow/core/snapshot"
 	"gollow/logging"
-	"gollow/snapshot"
 	"gollow/sources"
 	"gollow/storage"
 	"gollow/util"
@@ -102,7 +102,7 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	newSnapshotName := getAnnouncedVersionName(model, prevSnapshotVersion)
 	snapshot.WriteNewSnapshot(newSnapshotName, currBytes)
 
-	snapshotStorage := storage.NewFileStorage(lastAnnouncedSnapshot)
+	snapshotStorage := storage.NewStorage(lastAnnouncedSnapshot)
 	prevBytes, err := snapshotStorage.Read()
 	if err != nil {
 		logging.GetLogger().Error("Error in reading previous data : ", err)
@@ -113,8 +113,8 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	//prevData, err := util.UnmarshalDataModelBytesFast(prevBytes, model)
 
 	logging.GetLogger().Info("Generating diff for : ", model.GetDataName())
-	logging.GetLogger().Info("Diff prevVersion , currVersion : ", prevSnapshotVersion, prevSnapshotVersion+1)
-	err = diff.CreateNewDiff(model, prevData, currData, prevSnapshotVersion, prevSnapshotVersion+1)
+	logging.GetLogger().Info("DiffObject prevVersion , currVersion : ", prevSnapshotVersion, prevSnapshotVersion+1)
+	err = core.DiffObjectDao.CreateNewDiff(model, prevData, currData, prevSnapshotVersion, prevSnapshotVersion+1)
 
 	if err != nil {
 		logging.GetLogger().Error("Error in producing diff for : "+newSnapshotName, err)
@@ -122,25 +122,6 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	newSnapshotFileName := getAnnouncedVersionName(model, prevSnapshotVersion)
 
 	snapshot.UpdateLatestAnnouncedVersion(announcedVersionStorage, announcedVersionKeyName(model), newSnapshotFileName)
-
-	//delta := diff.GetNewDiffObj()
-	//delta.GetDiffBetweenModels(prevData, currData)
-	//
-	//if shouldDiffBeProduced(delta) {
-	//	deltaBytes, err := MarshalDiff(delta)
-	//	if err != nil {
-	//		logging.GetLogger().Error("Error in Marshalling Diff , err : ", err)
-	//	}
-	//	writer.Write(diffPath, deltaBytes)
-	//}
-
-	//createdDiff := readDiff(writer, diffPath)
-	//
-	//p, ok := createdDiff.NewObjects.([]interface{})
-	//
-	//if p != nil {
-	//	logging.GetLogger().Info("Length of new object : ", len(p))
-	//}
 
 	return
 }
@@ -195,40 +176,6 @@ func UnMarshalInterfaceToModel(dataInterface []interface{}, model sources.DataMo
 
 	return models, nil
 }
-
-//func shouldDiffBeProduced(diff *diff.Diff) bool {
-//	if diff == nil ||
-//		(reflect.TypeOf(diff.NewObjects).Size() == 0 &&
-//			reflect.TypeOf(diff.ChangedObjects).Size() == 0 &&
-//			len(diff.MissingKeys) == 0) {
-//		return false
-//	}
-//	return true
-//}
-
-//
-//func generateDiff(diff *diff.Diff, writer storage.SnapshotWriter, diffPath string) {
-//	diffBytes, err := diff.Marshal()
-//	if err != nil {
-//		logging.GetLogger().Error("Error in marshalling diff , err: ", err)
-//	}
-//
-//	writer.Write(diffPath, diffBytes)
-//}
-//
-//func readDiff(reader storage.SnapshotReader, diffPath string) *diff.Diff {
-//	data, err := reader.Read(diffPath)
-//	if err != nil {
-//		logging.GetLogger().Error("Error in reading diff : ", err)
-//	}
-//
-//	d := diff.GetNewDiffObj()
-//	err = json.Unmarshal(data, &d)
-//	if err != nil {
-//		logging.GetLogger().Error("Error in Unmarshalling : ", err)
-//	}
-//	return d
-//}
 
 func announcedVersionKeyName(model sources.DataModel) string {
 	return model.GetNameSpace() + separator + model.GetDataName()

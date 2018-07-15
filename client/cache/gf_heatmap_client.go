@@ -39,7 +39,7 @@ func GetHeatMapDataInstance() *heatMapDataCache {
 
 func BuildSnapshot(lastAnnouncedSnapshot string) error {
 	// Unmarshal the data into the sources.DataModel
-	snapshotStorage := storage.NewFileStorage(lastAnnouncedSnapshot)
+	snapshotStorage := storage.NewStorage(lastAnnouncedSnapshot)
 	prevBytes, err := snapshotStorage.Read()
 
 	if err != nil {
