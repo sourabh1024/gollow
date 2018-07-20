@@ -1,8 +1,6 @@
-hash: 0ce7d577be5d122fe1aedcd4b564fd7b705b56bc5a16d55736b7109591cf5cd1
-updated: 2018-07-08T17:52:44.384959+08:00
+hash: 3cbd49ab8efdf063671bdef361cc829df6b435af23a649d6a4ca3fba1c48971d
+updated: 2018-07-20T15:18:58.594335+08:00
 imports:
-- name: github.com/elgs/gosqljson
-  version: 027aa4915315a0b2825c0f025cea347829b974fa
 - name: github.com/go-sql-driver/mysql
   version: d523deb1b23d913de5bdada721a6071e71283618
 - name: github.com/golang/protobuf
@@ -16,25 +14,20 @@ imports:
   - ptypes/duration
   - ptypes/struct
   - ptypes/timestamp
-- name: github.com/googleapis/googleapis
-  version: 98aa90e970064d275b1cef24c1989d702fa88904
 - name: github.com/grpc-ecosystem/grpc-gateway
-  version: 5948c50af05b7b4a4417c40b6768ffedd3b866dd
+  version: 92583770e3f01b09a0d3e9bdf64321d8bebd48f2
   subpackages:
   - runtime
   - runtime/internal
   - utilities
-- name: github.com/mitchellh/mapstructure
-  version: bb74f1db0675b241733089d5a1faa5dd8b0ef57b
 - name: github.com/op/go-logging
   version: b2cb9fa56473e98db8caba80237377e83fe44db5
-- name: github.com/stackimpact/stackimpact-go
-  version: 4527daa58297dc6de4c63654cc6c32f0e6b1af74
+- name: github.com/stretchr/testify
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
-  - internal
-  - internal/pprof/profile
+  - mock
 - name: golang.org/x/net
-  version: afe8f62b1d6bbd81f31868121a50b06d8188e1f9
+  version: a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1
   subpackages:
   - context
   - http/httpguts
@@ -44,7 +37,7 @@ imports:
   - internal/timeseries
   - trace
 - name: golang.org/x/text
-  version: 5cec4b58c438bd98288aeb248bab2c1840713d21
+  version: 0605a8320aceb4207a5fb3521281e17ec2075476
   subpackages:
   - secure/bidirule
   - transform
@@ -55,7 +48,7 @@ imports:
   subpackages:
   - cloudsql
 - name: google.golang.org/genproto
-  version: 80063a038e333bbe006c878e4c5ce4c74d055498
+  version: fedd2861243fd1a8152376292b921b394c7bef7e
   subpackages:
   - googleapis/api/annotations
   - googleapis/rpc/status

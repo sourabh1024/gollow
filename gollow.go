@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gollow/core/snapshot"
 	"gollow/logging"
 	"gollow/producer"
 	"gollow/sources/datamodel"
@@ -12,7 +13,9 @@ func main() {
 
 	announcedFileName := "announced.version"
 	announcedVersionStorage := storage.NewStorage(announcedFileName)
-	producer.Producer(announcedVersionStorage, &datamodel.HeatMapData{})
+	snapshot.Init(announcedVersionStorage)
+
+	producer.Producer(announcedVersionStorage, &datamodel.DummyData{})
 
 	logging.GetLogger().Info("complete")
 

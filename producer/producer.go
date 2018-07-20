@@ -74,18 +74,20 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 		logging.GetLogger().Error("Error in fetching current data  : ", err)
 	}
 
-	currData, ok := data.([]sources.DataModel)
-	if !ok {
-		logging.GetLogger().Error("Error in typecasting interface{} to []source.DatModel ")
-		return
-	}
+	currData := data
+	//currData, ok := data.([]sources.DataModel)
+	//if !ok {
+	//	logging.GetLogger().Error("Error in typecasting interface{} to []source.DatModel ")
+	//	return
+	//}
 
 	currBytes, err := MarshalDataModels(currData)
 	if err != nil {
 		logging.GetLogger().Error("Error in marshalling current data bytes : ", err)
 	}
 
-	lastAnnouncedSnapshot, err := snapshot.GetLatestAnnouncedVersion(announcedVersionStorage, announcedVersionKeyName(model))
+	lastAnnouncedSnapshot, err := snapshot.SnapshotImpl.GetLatestAnnouncedVersion(snapshot.AnnouncedVersionKeyName(model.GetNameSpace(),
+		model.GetDataName()))
 	if err != nil {
 		logging.GetLogger().Error("Error in getting previous announced version : ", err)
 		return
@@ -94,7 +96,8 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	if lastAnnouncedSnapshot == "" {
 		newSnapshotFileName := getAnnouncedVersionName(model, -1)
 		snapshot.WriteNewSnapshot(newSnapshotFileName, currBytes)
-		snapshot.UpdateLatestAnnouncedVersion(announcedVersionStorage, announcedVersionKeyName(model), newSnapshotFileName)
+		snapshot.SnapshotImpl.UpdateLatestAnnouncedVersion(snapshot.AnnouncedVersionKeyName(model.GetNameSpace(),
+			model.GetDataName()), newSnapshotFileName)
 		return
 	}
 
@@ -118,10 +121,12 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 
 	if err != nil {
 		logging.GetLogger().Error("Error in producing diff for : "+newSnapshotName, err)
+		return
 	}
 	newSnapshotFileName := getAnnouncedVersionName(model, prevSnapshotVersion)
 
-	snapshot.UpdateLatestAnnouncedVersion(announcedVersionStorage, announcedVersionKeyName(model), newSnapshotFileName)
+	snapshot.SnapshotImpl.UpdateLatestAnnouncedVersion(snapshot.AnnouncedVersionKeyName(model.GetNameSpace(),
+		model.GetDataName()), newSnapshotFileName)
 
 	return
 }
@@ -177,14 +182,12 @@ func UnMarshalInterfaceToModel(dataInterface []interface{}, model sources.DataMo
 	return models, nil
 }
 
-func announcedVersionKeyName(model sources.DataModel) string {
-	return model.GetNameSpace() + separator + model.GetDataName()
-}
-
 // prevVersion = -1 means its being produced for the first time
 func getAnnouncedVersionName(model sources.DataModel, prevVersion int64) string {
 	if prevVersion == -1 {
-		return fmt.Sprintf("%s-%d", announcedVersionKeyName(model), snapshot.DefaultVersionNumber)
+		return fmt.Sprintf("%s-%d", snapshot.AnnouncedVersionKeyName(model.GetNameSpace(),
+			model.GetDataName()), snapshot.DefaultVersionNumber)
 	}
-	return fmt.Sprintf("%s-%d", announcedVersionKeyName(model), prevVersion+1)
+	return fmt.Sprintf("%s-%d", snapshot.AnnouncedVersionKeyName(model.GetNameSpace(),
+		model.GetDataName()), prevVersion+1)
 }

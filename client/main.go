@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"golang.org/x/net/context"
 	"gollow/api"
 	"gollow/client/cache"
@@ -31,35 +32,8 @@ func main() {
 	}
 	log.Printf("Response from server: %s", response.Greeting)
 
-	//announcedVersion, err := c.GetAnnouncedVersion(context.Background(), &api.AnnouncedVersionRequest{Namespace: "test-consumer-group1", Entity: "heatmap_data"})
-
-	//cache.BuildSnapshot(announcedVersion.Currentversion)
-
-	//if err != nil {
-	//	log.Fatalf("Error when calling SayHello: %s", err)
-	//}
-	//log.Printf("Response from server: %s", announcedVersion.Currentversion)
-
-	//h := cache.GetHeatMapDataInstance()
-	//val, err := h.GetValue("1")
-	//
-	//if err != nil {
-	//	logging.GetLogger().Error("Error in getting value : ", err)
-	//	return
-	//}
-
-	//data, ok := val.(*datamodel.HeatMapData)
-	//
-	//if !ok {
-	//	logging.GetLogger().Error("Error in typecasting value : ", err)
-	//	return
-	//}
-
-	//logging.GetLogger().Info(fmt.Sprintf("ID %d , geoHash %s , vehicle : %d",
-	//	data.ID, data.Geohash, data.VehicleTypeID))
-
-	go UpdateSnapshots(c, datamodel.HeatMapDataRef)
-	go ReadValue(c, datamodel.HeatMapDataRef)
+	go UpdateSnapshots(c, datamodel.DummyDataRef)
+	go ReadValue(c, datamodel.DummyDataRef)
 	select {}
 }
 
@@ -72,13 +46,14 @@ func UpdateSnapshots(c api.PingClient, model sources.DataModel) {
 			case <-ticker.C:
 				// do stuff
 				logging.GetLogger().Info("Update Snapshot")
-				cache.FetchSnapshot(c, model)
+				cache.FetchSnapshot(c, model, cache.DummyDataCache)
 			case <-quit:
 				ticker.Stop()
 				return
 			}
 		}
 	}()
+	gob.Register()
 }
 
 func ReadValue(c api.PingClient, model sources.DataModel) {
@@ -90,12 +65,17 @@ func ReadValue(c api.PingClient, model sources.DataModel) {
 			case <-ticker.C:
 				// do stuff
 				logging.GetLogger().Info("Read data")
-				val, err := cache.GetHeatMapDataInstance().GetValue("1")
-				logging.GetLogger().Info("Size of cache : ", cache.GetHeatMapDataInstance().Size())
+				val, err := cache.DummyDataCache.Get("1")
 				if err != nil {
 					logging.GetLogger().Error("Error in reading value : ", err)
 					continue
 				}
+				dummyData, ok := val.(*datamodel.DummyData)
+				if !ok {
+					logging.GetLogger().Error("Error in parsing value : ")
+					continue
+				}
+				logging.GetLogger().Info("created at : ", dummyData.FirstName)
 				logging.GetLogger().Info("Value for id 1 : ", val)
 			case <-quit:
 				ticker.Stop()

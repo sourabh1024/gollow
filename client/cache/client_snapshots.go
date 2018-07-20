@@ -36,7 +36,7 @@ func newClientSnapshot() *clientSnapshots {
 	}
 }
 
-func FetchSnapshot(c api.PingClient, source sources.DataModel) {
+func FetchSnapshot(c api.PingClient, source sources.DataModel, cache GollowCache) {
 
 	announcedVersion, err := c.GetAnnouncedVersion(context.Background(),
 		&api.AnnouncedVersionRequest{Namespace: source.GetNameSpace(), Entity: source.GetDataName()})
@@ -50,7 +50,7 @@ func FetchSnapshot(c api.PingClient, source sources.DataModel) {
 
 	if currentSnapshotVersion == "" {
 		logging.GetLogger().Info("Building cache for dirst time for : ", source.GetNameSpace())
-		err := BuildSnapshot(announcedVersion.Currentversion)
+		err := BuildSnapshot(announcedVersion.Currentversion, source, cache)
 		if err != nil {
 			logging.GetLogger().Error("Error in building snapshots : ", err)
 		}
@@ -73,13 +73,13 @@ func FetchSnapshot(c api.PingClient, source sources.DataModel) {
 				continue
 			}
 
-			applyDiff(source, d)
+			applyDiff(source, d, cache)
 			GetClientSnapshots().Snapshots[getSnapshotKey(source)] = announcedVersion.Currentversion
 		}
 	}
 }
 
-func applyDiff(source sources.DataModel, d *core.DiffObject) {
+func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) {
 
 	defer util.Duration(time.Now(), "applydiff")
 	logging.GetLogger().Info("applying diff : ", d.Namespace)
@@ -97,7 +97,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject) {
 	}
 
 	for _, object := range newObjects {
-		GetHeatMapDataInstance().SetValue(object.GetPrimaryKey(), object)
+		cache.Set(object.GetPrimaryKey(), object)
 	}
 
 	logging.GetLogger().Info("New Objects udated in the map")
@@ -115,7 +115,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject) {
 	}
 
 	for _, object := range changedObjects {
-		GetHeatMapDataInstance().SetValue(object.GetPrimaryKey(), object)
+		cache.Set(object.GetPrimaryKey(), object)
 	}
 
 	logging.GetLogger().Info("Changed Objects updated in the map")
@@ -123,7 +123,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject) {
 	missingKeys := d.MissingKeys
 
 	for _, key := range missingKeys {
-		GetHeatMapDataInstance().DeleteValue(key)
+		cache.Delete(key)
 	}
 
 	logging.GetLogger().Info("Deleted Objects  in the map")
@@ -131,7 +131,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject) {
 }
 
 func getSnapshotKey(source sources.DataModel) string {
-	return source.GetNameSpace() + "-" + source.GetDataName()
+	return snapshot.AnnouncedVersionKeyName(source.GetNameSpace(), source.GetDataName())
 }
 
 func getDiffBetweenVersions(source sources.DataModel, version1, version2 string) []string {
@@ -147,6 +147,7 @@ func getDiffBetweenVersions(source sources.DataModel, version1, version2 string)
 
 	return diffs
 }
+
 func (c *clientSnapshots) GetCurrentSnapshot(key string) string {
 	c.RLock()
 	defer c.RUnlock()
@@ -161,4 +162,27 @@ func (c *clientSnapshots) UpdateCurrentSnapshot(key string, version string) {
 	c.Lock()
 	defer c.Unlock()
 	c.Snapshots[key] = version
+}
+
+func BuildSnapshot(lastAnnouncedSnapshot string, model sources.DataModel, cache GollowCache) error {
+	// Unmarshal the data into the sources.DataModel
+
+	dataBytes, err := snapshot.ReadSnapshot(lastAnnouncedSnapshot)
+	if err != nil {
+		logging.GetLogger().Error("Error in reading the last announced snapshot : ", lastAnnouncedSnapshot)
+		return err
+	}
+
+	data, err := producer.UnMarshalDataModelsBytes(dataBytes, model.NewDataRef())
+
+	if err != nil {
+		logging.GetLogger().Error("Error in un marshalling data bytes : ", err)
+		return err
+	}
+
+	logging.GetLogger().Info("Length of data from snapshot : ", len(data))
+
+	BuildCache(data, cache)
+
+	return nil
 }

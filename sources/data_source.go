@@ -14,7 +14,7 @@ type DataProducer interface {
 	CacheDuration() int64
 
 	//Load All loads all the dataModel
-	LoadAll() (interface{}, error)
+	LoadAll() ([]DataModel, error)
 }
 
 // DataSource is the interface every datamodel needs to implement

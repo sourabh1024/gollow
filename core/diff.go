@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const DiffSeparator = "-"
+
 var (
 	DiffObjectDao = &DiffObject{}
 )
@@ -32,10 +34,18 @@ type Diff interface {
 }
 
 func (d *DiffObject) GetDiffName(model sources.DataModel, prevVersion, currVersion int64) string {
-	return "diff-" + model.GetNameSpace() + "-" + model.GetDataName() + "-" + strconv.FormatInt(prevVersion, 10) + "-" + strconv.FormatInt(currVersion, 10)
+	return "diff" + DiffSeparator + model.GetNameSpace() + DiffSeparator + model.GetDataName() + DiffSeparator + strconv.FormatInt(prevVersion, 10) + DiffSeparator + strconv.FormatInt(currVersion, 10)
 }
 
 func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData []sources.DataModel, prevVersion, currVersion int64) error {
+	diffName := d.GetDiffName(model, prevVersion, currVersion)
+	logging.GetLogger().Info("DiffObject name produced : ", diffName)
+	diffStorage := storage.NewStorage(diffName)
+	return d.createDiff(model, prevData, currData, prevVersion, currVersion, diffStorage)
+}
+
+func (d *DiffObject) createDiff(model sources.DataModel, prevData, currData []sources.DataModel,
+	prevVersion, currVersion int64, store storage.Storage) error {
 
 	defer util.Duration(time.Now(), "CreateNewDiff")
 	delta := getDiffBetweenModels(prevData, currData)
@@ -47,21 +57,18 @@ func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData [
 	delta.Namespace = model.GetNameSpace()
 	delta.EntityName = model.GetDataName()
 
-	return d.SaveDiff(delta, model, prevVersion, currVersion)
+	return d.SaveDiff(store, delta, model, prevVersion, currVersion)
+
 }
 
-func (d *DiffObject) SaveDiff(delta *DiffObject, model sources.DataModel, prevVersion, currVersion int64) error {
+func (d *DiffObject) SaveDiff(store storage.Storage, delta *DiffObject, model sources.DataModel, prevVersion, currVersion int64) error {
 	diffBytes, err := marshalDiff(delta)
 	if err != nil {
 		logging.GetLogger().Error("Error in marshalling diff : ", diffBytes)
 		return err
 	}
 
-	diffName := d.GetDiffName(model, prevVersion, currVersion)
-	logging.GetLogger().Info("DiffObject name produced : ", diffName)
-	diffManager := storage.NewStorage(diffName)
-
-	_, err = diffManager.Write(diffBytes)
+	_, err = store.Write(diffBytes)
 	if err != nil {
 		logging.GetLogger().Error("Error in writing diff : ", err)
 	}

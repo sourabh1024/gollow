@@ -74,7 +74,7 @@ func (hd *HeatMapData) CacheDuration() int64 {
 	return int64(time.Duration(2 * time.Minute))
 }
 
-func (hd *HeatMapData) LoadAll() (interface{}, error) {
+func (hd *HeatMapData) LoadAll() ([]sources.DataModel, error) {
 
 	defer util.Duration(time.Now(), "HeatMapDataFetchFromSQL")
 	logging.GetLogger().Info("Starting load of data")

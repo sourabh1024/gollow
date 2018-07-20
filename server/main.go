@@ -1,21 +1,21 @@
 package main
 
 import (
-	"net"
-	"log"
 	"fmt"
-	"gollow/api"
-	"google.golang.org/grpc"
-	"golang.org/x/net/context"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"golang.org/x/net/context"
+	"gollow/api"
+	"gollow/core/snapshot"
+	"gollow/storage"
+	"google.golang.org/grpc"
+	"log"
+	"net"
 	"net/http"
 )
 
-
-
 //startGRPC server creates a grpcServer
 // Parameters : address
-func startGRPCServer(address string) error{
+func startGRPCServer(address string) error {
 
 	log.Printf("Starting GRPC server at : %s", address)
 
@@ -44,7 +44,7 @@ func startGRPCServer(address string) error{
 	return nil
 }
 
-func startRestServer(address , grpcAddress string) error{
+func startRestServer(address, grpcAddress string) error {
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -66,9 +66,8 @@ func startRestServer(address , grpcAddress string) error{
 	return nil
 }
 
-
 // main start a gRPC server and waits for connection
-func main()  {
+func main() {
 
 	log.Println("Starting server...")
 
@@ -89,8 +88,15 @@ func main()  {
 		}
 	}()
 
+	// initialise everything here
+	Init()
 	// infinite loop
 	log.Printf("Entering infinite loop")
 	select {}
 }
 
+func Init() {
+	announcedFileName := "announced.version"
+	announcedVersionStorage := storage.NewStorage(announcedFileName)
+	snapshot.Init(announcedVersionStorage)
+}
