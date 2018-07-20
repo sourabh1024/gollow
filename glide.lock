@@ -1,6 +1,10 @@
-hash: 3cbd49ab8efdf063671bdef361cc829df6b435af23a649d6a4ca3fba1c48971d
-updated: 2018-07-20T15:18:58.594335+08:00
+hash: badbb715a587f03302b893460b610e68055c4f967a04d885a2344e82a5df1149
+updated: 2018-07-20T18:58:53.698534+08:00
 imports:
+- name: github.com/davecgh/go-spew
+  version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
+  subpackages:
+  - spew
 - name: github.com/go-sql-driver/mysql
   version: d523deb1b23d913de5bdada721a6071e71283618
 - name: github.com/golang/protobuf
@@ -22,9 +26,16 @@ imports:
   - utilities
 - name: github.com/op/go-logging
   version: b2cb9fa56473e98db8caba80237377e83fe44db5
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
+- name: github.com/stretchr/objx
+  version: b8b73a35e9830ae509858c10dec5866b4d5c8bff
 - name: github.com/stretchr/testify
   version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
+  - assert
   - mock
 - name: golang.org/x/net
   version: a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1
@@ -43,6 +54,10 @@ imports:
   - transform
   - unicode/bidi
   - unicode/norm
+- name: golang.org/x/tools
+  version: 99195f4d4ffa6331a9bc856c72697a15d9842950
+  subpackages:
+  - cmd/cover
 - name: google.golang.org/appengine
   version: b1f26356af11148e710935ed1ac8a7f5702c7612
   subpackages:

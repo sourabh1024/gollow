@@ -29,3 +29,6 @@ import:
   - codes
   - grpclog
   - status
+- package: golang.org/x/tools
+  subpackages:
+  - cmd/cover

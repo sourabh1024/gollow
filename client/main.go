@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/gob"
 	"golang.org/x/net/context"
 	"gollow/api"
 	"gollow/client/cache"
@@ -53,7 +52,6 @@ func UpdateSnapshots(c api.PingClient, model sources.DataModel) {
 			}
 		}
 	}()
-	gob.Register()
 }
 
 func ReadValue(c api.PingClient, model sources.DataModel) {
