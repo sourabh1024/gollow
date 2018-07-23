@@ -40,8 +40,9 @@ func Init(ctx context.Context) {
 	}
 	logging.GetLogger().Info("Response from server: %s", response.Greeting)
 
-	go cache.UpdateSnapshots(ctx)
 	go cache.ReadValue()
+	cache.UpdateSnapshots(ctx)
+
 }
 
 func RegisterDataModels() {
