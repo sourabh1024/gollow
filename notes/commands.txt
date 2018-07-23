@@ -10,3 +10,15 @@ protoc -I api/ \
     -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
     --go_out=plugins=grpc:api \
     api.proto
+
+
+protoc -I client/client_api/ \
+     -I${GOPATH}/src \
+     -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+     --grpc-gateway_out=logtostderr=true:client/client_api \
+     client/client_api/api.proto
+
+     protoc -I client/client_api/ \
+         -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+         --go_out=plugins=grpc:client/client_api \
+         api.proto

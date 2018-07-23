@@ -2,8 +2,8 @@ package snapshot
 
 import (
 	"encoding/json"
+	"gollow/core/storage"
 	"gollow/logging"
-	"gollow/storage"
 	"regexp"
 	"strconv"
 	"sync"

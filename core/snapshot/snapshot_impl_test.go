@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gollow/storage"
+	"gollow/core/storage"
 	"testing"
 )
 

@@ -22,7 +22,7 @@ import:
   - context
 - package: google.golang.org/genproto
   subpackages:
-  - googleapis/api/annotations
+  - googleapis/client_api/annotations
 - package: google.golang.org/grpc
   version: v1.13.0
   subpackages:
@@ -32,3 +32,4 @@ import:
 - package: golang.org/x/tools
   subpackages:
   - cmd/cover
+- package: github.com/christophberger/grada

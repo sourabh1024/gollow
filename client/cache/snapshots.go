@@ -3,13 +3,13 @@ package cache
 import (
 	"encoding/json"
 	"golang.org/x/net/context"
-	"gollow/api"
 	"gollow/core"
 	"gollow/core/snapshot"
+	"gollow/core/storage"
 	"gollow/logging"
 	"gollow/producer"
+	"gollow/server/api"
 	"gollow/sources"
-	"gollow/storage"
 	"gollow/util"
 	"sync"
 	"time"
@@ -36,13 +36,13 @@ func newClientSnapshot() *clientSnapshots {
 	}
 }
 
-func FetchSnapshot(c api.PingClient, source sources.DataModel, cache GollowCache) {
+func FetchSnapshot(client api.PingClient, ctx context.Context, source sources.DataModel, cache GollowCache) {
 
-	announcedVersion, err := c.GetAnnouncedVersion(context.Background(),
+	announcedVersion, err := client.GetAnnouncedVersion(ctx,
 		&api.AnnouncedVersionRequest{Namespace: source.GetNameSpace(), Entity: source.GetDataName()})
 
 	if err != nil {
-		logging.GetLogger().Error("Error in fetching current snapshot version for : ", source.GetNameSpace())
+		logging.GetLogger().Error("Error in fetching current snapshot version for : %s , %s: %+v", source.GetNameSpace(), source.GetDataName(), err)
 		return
 	}
 
@@ -97,6 +97,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) 
 	}
 
 	for _, object := range newObjects {
+		logging.GetLogger().Info("Creating the key : ", object.GetPrimaryKey())
 		cache.Set(object.GetPrimaryKey(), object)
 	}
 
@@ -115,6 +116,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) 
 	}
 
 	for _, object := range changedObjects {
+		logging.GetLogger().Info("Updating the key : ", object.GetPrimaryKey())
 		cache.Set(object.GetPrimaryKey(), object)
 	}
 
@@ -123,6 +125,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) 
 	missingKeys := d.MissingKeys
 
 	for _, key := range missingKeys {
+		logging.GetLogger().Info("Deleting the key : ", key)
 		cache.Delete(key)
 	}
 
@@ -182,6 +185,8 @@ func BuildSnapshot(lastAnnouncedSnapshot string, model sources.DataModel, cache 
 
 	logging.GetLogger().Info("Length of data from snapshot : ", len(data))
 
+	logging.GetLogger().Info("first item ", data[0].GetPrimaryKey())
+	logging.GetLogger().Info("second  item ", data[1].GetPrimaryKey())
 	BuildCache(data, cache)
 
 	return nil

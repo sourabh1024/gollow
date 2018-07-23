@@ -1,6 +1,8 @@
-hash: badbb715a587f03302b893460b610e68055c4f967a04d885a2344e82a5df1149
-updated: 2018-07-20T18:58:53.698534+08:00
+hash: 61b166f78f1ae33ee63601818f835d6ab6b3a58ce6949ecbba1ee6650afa9d20
+updated: 2018-07-23T19:27:14.354699+08:00
 imports:
+- name: github.com/christophberger/grada
+  version: 5b073dc6bb9952bad0284bccfbe38ed447a40e75
 - name: github.com/davecgh/go-spew
   version: 8991bc29aa16c548c550c7ff78260e27b9ab7c73
   subpackages:
@@ -55,7 +57,7 @@ imports:
   - unicode/bidi
   - unicode/norm
 - name: golang.org/x/tools
-  version: 99195f4d4ffa6331a9bc856c72697a15d9842950
+  version: 60ffea201e66e0d9375dc5bec85245d7b416710f
   subpackages:
   - cmd/cover
 - name: google.golang.org/appengine
@@ -63,9 +65,10 @@ imports:
   subpackages:
   - cloudsql
 - name: google.golang.org/genproto
-  version: fedd2861243fd1a8152376292b921b394c7bef7e
+  version: 02b4e95473316948020af0b7a4f0f22c73929b0e
   subpackages:
   - googleapis/api/annotations
+  - googleapis/client_api/annotations
   - googleapis/rpc/status
 - name: google.golang.org/grpc
   version: 168a6198bcb0ef175f7dacec0b8691fc141dc9b8

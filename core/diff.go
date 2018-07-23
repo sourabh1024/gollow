@@ -2,11 +2,10 @@ package core
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"gollow/core/storage"
 	"gollow/logging"
 	"gollow/sources"
-	"gollow/storage"
 	"gollow/util"
 	"reflect"
 	"strconv"
@@ -37,7 +36,7 @@ func (d *DiffObject) GetDiffName(model sources.DataModel, prevVersion, currVersi
 	return "diff" + DiffSeparator + model.GetNameSpace() + DiffSeparator + model.GetDataName() + DiffSeparator + strconv.FormatInt(prevVersion, 10) + DiffSeparator + strconv.FormatInt(currVersion, 10)
 }
 
-func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData []sources.DataModel, prevVersion, currVersion int64) error {
+func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData []sources.DataModel, prevVersion, currVersion int64) (bool, error) {
 	diffName := d.GetDiffName(model, prevVersion, currVersion)
 	logging.GetLogger().Info("DiffObject name produced : ", diffName)
 	diffStorage := storage.NewStorage(diffName)
@@ -45,20 +44,24 @@ func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData [
 }
 
 func (d *DiffObject) createDiff(model sources.DataModel, prevData, currData []sources.DataModel,
-	prevVersion, currVersion int64, store storage.Storage) error {
+	prevVersion, currVersion int64, store storage.Storage) (bool, error) {
 
 	defer util.Duration(time.Now(), "CreateNewDiff")
 	delta := getDiffBetweenModels(prevData, currData)
 
 	if !shouldDiffBeProduced(delta) {
-		return errors.New("no new data for diff")
+		return false, nil
 	}
 
 	delta.Namespace = model.GetNameSpace()
 	delta.EntityName = model.GetDataName()
 
-	return d.SaveDiff(store, delta, model, prevVersion, currVersion)
+	err := d.SaveDiff(store, delta, model, prevVersion, currVersion)
+	if err != nil {
+		return false, err
+	}
 
+	return true, nil
 }
 
 func (d *DiffObject) SaveDiff(store storage.Storage, delta *DiffObject, model sources.DataModel, prevVersion, currVersion int64) error {

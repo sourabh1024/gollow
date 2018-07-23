@@ -1,0 +1,8 @@
+{
+  "MySQLConfig" :{
+    "dsn":"root:password@/test?parseTime=true",
+    "maxIdle":1000,
+    "maxOpen":10
+  },
+  "announcedVersion" :"announced.version"
+}

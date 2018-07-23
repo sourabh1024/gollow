@@ -4,41 +4,41 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gollow/core/storage"
 	"gollow/sources"
 	"gollow/sources/datamodel"
-	"gollow/storage"
 	"testing"
 )
 
 func TestDiff_GetDiffBetweenModels(t *testing.T) {
 
 	oldData := []sources.DataModel{
-		&datamodel.HeatMapData{
-			ID:      1,
-			Geohash: "abc",
+		&datamodel.DummyData{
+			ID:        1,
+			FirstName: "abc",
 		},
-		&datamodel.HeatMapData{
-			ID:      2,
-			Geohash: "abc",
+		&datamodel.DummyData{
+			ID:        2,
+			FirstName: "abc",
 		},
-		&datamodel.HeatMapData{
-			ID:      4,
-			Geohash: "abc",
+		&datamodel.DummyData{
+			ID:        4,
+			FirstName: "abc",
 		},
 	}
 
 	newData := []sources.DataModel{
-		&datamodel.HeatMapData{
-			ID:      1,
-			Geohash: "abc",
+		&datamodel.DummyData{
+			ID:        1,
+			FirstName: "abc",
 		},
-		&datamodel.HeatMapData{
-			ID:      2,
-			Geohash: "def",
+		&datamodel.DummyData{
+			ID:        2,
+			FirstName: "def",
 		},
-		&datamodel.HeatMapData{
-			ID:      3,
-			Geohash: "abc",
+		&datamodel.DummyData{
+			ID:        3,
+			FirstName: "abc",
 		},
 	}
 
@@ -48,14 +48,14 @@ func TestDiff_GetDiffBetweenModels(t *testing.T) {
 	changedObjects := make([]sources.DataModel, 0)
 	missingKeys := make([]string, 0)
 
-	newObjects = append(newObjects, &datamodel.HeatMapData{
-		ID:      3,
-		Geohash: "abc",
+	newObjects = append(newObjects, &datamodel.DummyData{
+		ID:        3,
+		FirstName: "abc",
 	})
 
-	changedObjects = append(changedObjects, &datamodel.HeatMapData{
-		ID:      2,
-		Geohash: "def",
+	changedObjects = append(changedObjects, &datamodel.DummyData{
+		ID:        2,
+		FirstName: "def",
 	})
 
 	missingKeys = append(missingKeys, "4")
@@ -71,29 +71,29 @@ func TestDiffObject_createDiff(t *testing.T) {
 	storageMock := new(storage.MockStorage)
 
 	data := []sources.DataModel{
-		&datamodel.HeatMapData{
-			ID:      1,
-			Geohash: "abc",
+		&datamodel.DummyData{
+			ID:        1,
+			FirstName: "abc",
 		},
-		&datamodel.HeatMapData{
-			ID:      2,
-			Geohash: "def",
+		&datamodel.DummyData{
+			ID:        2,
+			FirstName: "def",
 		},
-		&datamodel.HeatMapData{
-			ID:      3,
-			Geohash: "ghi",
+		&datamodel.DummyData{
+			ID:        3,
+			FirstName: "ghi",
 		},
-		&datamodel.HeatMapData{
-			ID:      4,
-			Geohash: "jkl",
+		&datamodel.DummyData{
+			ID:        4,
+			FirstName: "jkl",
 		},
-		&datamodel.HeatMapData{
-			ID:      5,
-			Geohash: "mno",
+		&datamodel.DummyData{
+			ID:        5,
+			FirstName: "mno",
 		},
-		&datamodel.HeatMapData{
-			ID:      1,
-			Geohash: "why",
+		&datamodel.DummyData{
+			ID:        1,
+			FirstName: "why",
 		},
 	}
 
@@ -134,7 +134,7 @@ func TestDiffObject_createDiff(t *testing.T) {
 			},
 			oldData:       []sources.DataModel{data[0], data[1]},
 			newData:       []sources.DataModel{data[0], data[1]},
-			expectedError: errors.New("no new data for diff"),
+			expectedError: nil,
 		},
 		{
 			desc: "Unhappy path with error in writing",
@@ -152,7 +152,7 @@ func TestDiffObject_createDiff(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		scenario.setup()
-		err := DiffObjectDao.createDiff(dataModelMock, scenario.oldData, scenario.newData, 1, 2, storageMock)
+		_, err := DiffObjectDao.createDiff(dataModelMock, scenario.oldData, scenario.newData, 1, 2, storageMock)
 		mock.AssertExpectationsForObjects(t)
 		assert.Equal(t, err, scenario.expectedError)
 	}

@@ -35,22 +35,22 @@ type DummyData struct {
 //////////////////////////////////////////////////////////////////
 
 // NewEntity implements the data.Entity interface.
-func (d DummyData) NewEntity() data.Entity {
+func (d *DummyData) NewEntity() data.Entity {
 	return &DummyData{}
 }
 
 //GetNameSpace implements the data.Entity interface
-func (d DummyData) GetNameSpace() string {
+func (d *DummyData) GetNameSpace() string {
 	return "test-consumer-group1"
 }
 
 //GetPrimaryKey implements the data.Entity interface
-func (d DummyData) GetPrimaryKey() string {
+func (d *DummyData) GetPrimaryKey() string {
 	return strconv.FormatInt(d.ID, 10)
 }
 
 //GetDataName implements the data.Entity interface
-func (d DummyData) GetDataName() string {
+func (d *DummyData) GetDataName() string {
 	return "dummy_data"
 }
 
@@ -62,26 +62,23 @@ func (d DummyData) GetDataName() string {
 ///////////// Implement producer.DataProducer interface /////////////
 //////////////////////////////////////////////////////////////////
 
-func (d DummyData) NewDataRef() sources.DataModel {
+func (d *DummyData) NewDataRef() sources.DataModel {
 	return &DummyData{}
 }
 
 func (d *DummyData) CacheDuration() int64 {
-	return int64(time.Duration(2 * time.Minute))
+	return int64(time.Duration(1 * time.Minute))
 }
 
 func (d *DummyData) LoadAll() ([]sources.DataModel, error) {
 
 	defer util.Duration(time.Now(), "DummyDataDataFetchFromSQL")
-	logging.GetLogger().Info("Starting load of data")
-
-	//TODO : Remove this from here
-	config.Init()
+	logging.GetLogger().Info("Starting loading of data for %s", d.GetDataName())
 
 	var result []sources.DataModel
 
 	query := "SELECT * FROM dummy_data"
-	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.MySQLConfig, query, &DummyData{})
+	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.GlobalConfig.MySQLConfig, query, &DummyData{})
 
 	if err != nil {
 		logging.GetLogger().Error("Error in fetching data from DB : ", err)
@@ -89,11 +86,8 @@ func (d *DummyData) LoadAll() ([]sources.DataModel, error) {
 	}
 
 	defer util.Duration(time.Now(), "DummyData converting")
-	logging.GetLogger().Info("Starting converting of data")
 
 	lenResult := len(entities)
-	logging.GetLogger().Info("Length of data returned from DB : %d ", lenResult)
-	logging.GetLogger().Info("Size of data returned  from DB : %d ", reflect.TypeOf(entities).Size())
 
 	result = make([]sources.DataModel, lenResult)
 

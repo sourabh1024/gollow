@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"gollow/core"
 	"gollow/core/snapshot"
+	"gollow/core/storage"
 	"gollow/logging"
 	"gollow/sources"
-	"gollow/storage"
 	"gollow/util"
 	"time"
 )
@@ -17,42 +17,16 @@ const (
 	separator = "-"
 )
 
-/**
-ProducerWorker is Worker method , it consumes the jobs from the channel
-@param workerID : workerID of the worker
-@param jobs : jobs channel in which all DataModel to be produced are pushed
-@param results : result channel in which the results are pushed back
-*/
-func ProducerWorker(workerID int, jobs <-chan sources.DataModel, results chan<- interface{}) {
-
-	//for j := range jobs {
-	//
-	//}
-}
-
-func StartProducer([]sources.DataModel) {
-
-	//ticker := time.NewTicker(1 * time.Minute)
-
-	//go func() {
-	//
-	//	select {
-	//	<-ticker.C:
-	//
-	//	}
-	//}()
-}
-
 type UniversalDTO struct {
 	Data interface{} `json:"data"`
 }
 
 /**
-Producer produces a given data source DataModel
+ProduceModel produces a given data source DataModel
 @param model: DataModel to produce
 @returns :
 */
-func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) {
+func ProduceModel(model sources.DataModel) {
 
 	/*
 	 0. Load the current Data
@@ -65,7 +39,7 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	 7. Update the announced version
 	*/
 
-	defer util.Duration(time.Now(), fmt.Sprintf("Producer for : %s", model.GetDataName()))
+	defer util.Duration(time.Now(), fmt.Sprintf("ProduceModel for : %s", model.GetDataName()))
 
 	logging.GetLogger().Info("Starting data producing for : ", model.GetDataName())
 
@@ -75,11 +49,6 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	}
 
 	currData := data
-	//currData, ok := data.([]sources.DataModel)
-	//if !ok {
-	//	logging.GetLogger().Error("Error in typecasting interface{} to []source.DatModel ")
-	//	return
-	//}
 
 	currBytes, err := MarshalDataModels(currData)
 	if err != nil {
@@ -113,16 +82,16 @@ func Producer(announcedVersionStorage storage.Storage, model sources.DataModel) 
 	}
 
 	prevData, err := UnMarshalDataModelsBytes(prevBytes, model)
-	//prevData, err := util.UnmarshalDataModelBytesFast(prevBytes, model)
 
 	logging.GetLogger().Info("Generating diff for : ", model.GetDataName())
 	logging.GetLogger().Info("DiffObject prevVersion , currVersion : ", prevSnapshotVersion, prevSnapshotVersion+1)
-	err = core.DiffObjectDao.CreateNewDiff(model, prevData, currData, prevSnapshotVersion, prevSnapshotVersion+1)
+	ok, err := core.DiffObjectDao.CreateNewDiff(model, prevData, currData, prevSnapshotVersion, prevSnapshotVersion+1)
 
-	if err != nil {
+	if err != nil || !ok {
 		logging.GetLogger().Error("Error in producing diff for : "+newSnapshotName, err)
 		return
 	}
+
 	newSnapshotFileName := getAnnouncedVersionName(model, prevSnapshotVersion)
 
 	snapshot.SnapshotImpl.UpdateLatestAnnouncedVersion(snapshot.AnnouncedVersionKeyName(model.GetNameSpace(),

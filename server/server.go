@@ -1,14 +1,12 @@
-package main
+package server
 
 import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
-	"gollow/api"
-	"gollow/core/snapshot"
-	"gollow/storage"
+	"gollow/logging"
+	"gollow/server/api"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"net/http"
 )
@@ -17,7 +15,7 @@ import (
 // Parameters : address
 func startGRPCServer(address string) error {
 
-	log.Printf("Starting GRPC server at : %s", address)
+	logging.GetLogger().Info("Starting GRPC server at : %s", address)
 
 	// create a listener on TCP
 	lis, err := net.Listen("tcp", address)
@@ -25,7 +23,7 @@ func startGRPCServer(address string) error {
 		return fmt.Errorf("Failed to start GRPC server: %v", err)
 	}
 
-	log.Printf("Started GRPC server on : %s", address)
+	logging.GetLogger().Info("Started GRPC server on : %s", address)
 
 	// create a server instance
 	s := api.Server{}
@@ -61,15 +59,15 @@ func startRestServer(address, grpcAddress string) error {
 	if err != nil {
 		return fmt.Errorf("ould not register service Ping: %s", err)
 	}
-	log.Printf("starting HTTP/1.1 REST server on %s", address)
+	logging.GetLogger().Info("starting HTTP/1.1 REST server on %s", address)
 	http.ListenAndServe(address, mux)
 	return nil
 }
 
 // main start a gRPC server and waits for connection
-func main() {
+func ServerInit() {
 
-	log.Println("Starting server...")
+	logging.GetLogger().Info("Starting server...")
 
 	restAddress := fmt.Sprintf("%s:%d", "localhost", 7778)
 	grpcAddress := fmt.Sprintf("%s:%d", "localhost", 7777)
@@ -77,26 +75,17 @@ func main() {
 	go func() {
 		err := startGRPCServer(grpcAddress)
 		if err != nil {
-			log.Fatalf("failed to start gRPC server: %s", err)
+			logging.GetLogger().Error("failed to start gRPC server: %s", err)
 		}
 	}()
 
 	go func() {
 		err := startRestServer(restAddress, grpcAddress)
 		if err != nil {
-			log.Fatalf("failed to start gRPC server: %s", err)
+			logging.GetLogger().Error("failed to start gRPC server: %s", err)
 		}
 	}()
-
-	// initialise everything here
-	Init()
 	// infinite loop
-	log.Printf("Entering infinite loop")
+	logging.GetLogger().Info("Entering infinite loop")
 	select {}
-}
-
-func Init() {
-	announcedFileName := "announced.version"
-	announcedVersionStorage := storage.NewStorage(announcedFileName)
-	snapshot.Init(announcedVersionStorage)
 }
