@@ -1,8 +1,6 @@
 package producer
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"gollow/core"
 	"gollow/core/snapshot"
@@ -50,7 +48,7 @@ func ProduceModel(model sources.DataModel) {
 
 	currData := data
 
-	currBytes, err := MarshalDataModels(currData)
+	currBytes, err := util.MarshalDataModels(currData)
 	if err != nil {
 		logging.GetLogger().Error("Error in marshalling current data bytes : ", err)
 	}
@@ -81,7 +79,7 @@ func ProduceModel(model sources.DataModel) {
 		return
 	}
 
-	prevData, err := UnMarshalDataModelsBytes(prevBytes, model)
+	prevData, err := util.UnMarshalDataModelsBytes(prevBytes, model)
 
 	logging.GetLogger().Info("Generating diff for : ", model.GetDataName())
 	logging.GetLogger().Info("DiffObject prevVersion , currVersion : ", prevSnapshotVersion, prevSnapshotVersion+1)
@@ -98,57 +96,6 @@ func ProduceModel(model sources.DataModel) {
 		model.GetDataName()), newSnapshotFileName)
 
 	return
-}
-
-func MarshalDataModels(data []sources.DataModel) ([]byte, error) {
-	universalDto := &UniversalDTO{Data: data}
-	return json.Marshal(universalDto)
-}
-
-func UnMarshalDataModelsBytes(data []byte, model sources.DataModel) ([]sources.DataModel, error) {
-
-	defer util.Duration(time.Now(), fmt.Sprintf("UnmarshalDataModelBytes for : %s", model.GetDataName()))
-	oldData := &UniversalDTO{}
-
-	p := time.Now()
-	err := json.Unmarshal(data, oldData)
-	logging.GetLogger().Info("Unmarshalling time : ", time.Since(p))
-	if err != nil {
-		logging.GetLogger().Info("Error in unmarshalling old data bytes : ", err)
-		return nil, err
-	}
-
-	dataInterface, ok := (oldData.Data).([]interface{})
-	if !ok {
-		logging.GetLogger().Error("Error in typecasting the oldData into interface array, Err :", err)
-		return nil, errors.New("error in typecasting old data bytes")
-	}
-
-	return UnMarshalInterfaceToModel(dataInterface, model)
-}
-
-func UnMarshalInterfaceToModel(dataInterface []interface{}, model sources.DataModel) ([]sources.DataModel, error) {
-
-	models := make([]sources.DataModel, 0)
-	for i := 0; i < len(dataInterface); i++ {
-		dataMap, ok := dataInterface[i].(map[string]interface{})
-
-		if !ok {
-			logging.GetLogger().Error("Error in typecasting datampa")
-		}
-
-		data, _ := json.Marshal(dataMap)
-		var result interface{}
-		result = model.NewDataRef()
-		err := json.Unmarshal(data, &result)
-
-		if err != nil {
-			logging.GetLogger().Error("err in unmarhsl ", err)
-		}
-		models = append(models, result.(sources.DataModel))
-	}
-
-	return models, nil
 }
 
 // prevVersion = -1 means its being produced for the first time

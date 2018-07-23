@@ -5,14 +5,20 @@ import (
 	"gollow/client/cache/client_datamodel"
 	"gollow/logging"
 	"gollow/server/api"
+	"gollow/sources"
 	"gollow/sources/datamodel"
 	"google.golang.org/grpc"
+	"sync"
 	"time"
 )
+
+var wg sync.WaitGroup
 
 func UpdateSnapshots(ctx context.Context) {
 	models := GetRegisteredModels()
 	for model, cache := range models {
+		wg.Add(1)
+		go UpdateFirstTimeSnapshot(GetProducerClient(), ctx, model, cache)
 		ticker := time.NewTicker(time.Duration(model.CacheDuration()))
 		quit := make(chan struct{})
 		go func() {
@@ -35,8 +41,16 @@ func UpdateSnapshots(ctx context.Context) {
 			}
 		}()
 	}
+	logging.GetLogger().Info("Waiting for first snapshot to be fetched")
+	wg.Wait()
 }
 
+func UpdateFirstTimeSnapshot(client api.PingClient, ctx context.Context, model sources.DataModel, cache GollowCache) {
+	defer wg.Done()
+	FetchSnapshot(client, ctx, model, cache)
+}
+
+// for demo purpose
 func ReadValue() {
 	ticker := time.NewTicker(time.Duration(30 * time.Second))
 	quit := make(chan struct{})

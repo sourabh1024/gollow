@@ -2,121 +2,145 @@ package cache
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"golang.org/x/net/context"
 	"gollow/core"
 	"gollow/core/snapshot"
 	"gollow/core/storage"
 	"gollow/logging"
-	"gollow/producer"
 	"gollow/server/api"
 	"gollow/sources"
 	"gollow/util"
-	"sync"
 	"time"
 )
 
-var ins *clientSnapshots
-var onc sync.Once
+var (
+	ErrTypeCasting = errors.New("error in typecasting the interface")
+)
 
-type clientSnapshots struct {
-	sync.RWMutex
-	Snapshots map[string]string
-}
-
-func GetClientSnapshots() *clientSnapshots {
-	onc.Do(func() {
-		ins = newClientSnapshot()
-	})
-	return ins
-}
-
-func newClientSnapshot() *clientSnapshots {
-	return &clientSnapshots{
-		Snapshots: make(map[string]string),
-	}
-}
-
-func FetchSnapshot(client api.PingClient, ctx context.Context, source sources.DataModel, cache GollowCache) {
-
+func fetchAnnouncedVersion(client api.PingClient, ctx context.Context, source sources.DataModel) (string, error) {
 	announcedVersion, err := client.GetAnnouncedVersion(ctx,
 		&api.AnnouncedVersionRequest{Namespace: source.GetNameSpace(), Entity: source.GetDataName()})
 
 	if err != nil {
 		logging.GetLogger().Error("Error in fetching current snapshot version for : %s , %s: %+v", source.GetNameSpace(), source.GetDataName(), err)
+		return "", err
+	}
+	return announcedVersion.Currentversion, nil
+}
+
+func FetchFullSnapshot(currentVersion string, source sources.DataModel, cache GollowCache) error {
+
+	logging.GetLogger().Info("Building cache with full snapshot  : %s ", currentVersion)
+	data, err := loadSnapshot(currentVersion, source)
+	if err != nil {
+		logging.GetLogger().Error("Error in fetching full snapshot : %+v ", err)
+		return err
+	}
+	BuildCache(data, cache)
+	return nil
+}
+
+func FetchSnapshot(client api.PingClient, ctx context.Context, source sources.DataModel, cache GollowCache) {
+
+	defer util.Duration(time.Now(),
+		fmt.Sprintf("fetch snapshot : %s-%s", source.GetNameSpace(), source.GetDataName()))
+
+	currentVersion, ok := GetSnapshotVersion().getSnapshotVersion(source)
+
+	announcedVersion, err := fetchAnnouncedVersion(client, ctx, source)
+	if err != nil || announcedVersion == "" {
+		logging.GetLogger().Error("Error in fetching the announced version , err : %+v", err)
 		return
 	}
 
-	currentSnapshotVersion := GetClientSnapshots().GetCurrentSnapshot(getSnapshotKey(source))
-
-	if currentSnapshotVersion == "" {
-		logging.GetLogger().Info("Building cache for dirst time for : ", source.GetNameSpace())
-		err := BuildSnapshot(announcedVersion.Currentversion, source, cache)
+	if currentVersion == "" || !ok {
+		logging.GetLogger().Info("Fetching full snapshot : %s", announcedVersion)
+		err := FetchFullSnapshot(announcedVersion, source, cache)
 		if err != nil {
-			logging.GetLogger().Error("Error in building snapshots : ", err)
+			logging.GetLogger().Error("Error in fetching the full snapshot , err : %+v", err)
+			return
 		}
-		GetClientSnapshots().Snapshots[getSnapshotKey(source)] = announcedVersion.Currentversion
-
+		GetSnapshotVersion().updateSnapshotVersion(source, currentVersion)
 		return
 	}
 
-	if currentSnapshotVersion != announcedVersion.Currentversion {
-		diffs := getDiffBetweenVersions(source, currentSnapshotVersion, announcedVersion.Currentversion)
-
-		for _, diffName := range diffs {
-			logging.GetLogger().Info("Reading diff : ", diffName)
-			diffManager := storage.NewStorage(diffName)
-			data, err := diffManager.Read()
-			d := &core.DiffObject{}
-			err = json.Unmarshal(data, &d)
-			if err != nil {
-				logging.GetLogger().Error("Error in Unmarshalling : ", err)
-				continue
-			}
-
-			applyDiff(source, d, cache)
-			GetClientSnapshots().Snapshots[getSnapshotKey(source)] = announcedVersion.Currentversion
+	if currentVersion != announcedVersion {
+		diffs := getDiffBetweenVersions(source, currentVersion, announcedVersion)
+		err := applyAllDiffs(diffs, source, cache)
+		if err != nil {
+			logging.GetLogger().Error("Error in applying diff , err : %+v ", err)
+			return
 		}
+		GetSnapshotVersion().updateSnapshotVersion(source, currentVersion)
 	}
 }
 
-func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) {
+func applyAllDiffs(diffs []string, source sources.DataModel, cache GollowCache) error {
 
-	defer util.Duration(time.Now(), "applydiff")
+	for _, diffName := range diffs {
+
+		logging.GetLogger().Info("Applying  diff : %s", diffName)
+
+		diff, err := getDiffObject(diffName)
+		if err != nil {
+			logging.GetLogger().Error("Error in Unmarshalling : ", err)
+			return err
+		}
+
+		err = applyDiff(source, diff, cache)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getDiffObject(diffName string) (*core.DiffObject, error) {
+	diffManager := storage.NewStorage(diffName)
+	data, err := diffManager.Read()
+	if err != nil {
+		return nil, err
+	}
+	d := &core.DiffObject{}
+	err = json.Unmarshal(data, &d)
+
+	return d, err
+}
+
+// i don't like this method but I am making peace with it now.. -_-
+func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) error {
+
+	defer util.Duration(time.Now(), "apply-diff")
 	logging.GetLogger().Info("applying diff : ", d.Namespace)
 
 	newObjectsInterface, ok := d.NewObjects.([]interface{})
 	if !ok {
-		logging.GetLogger().Error("Error in typecasting the interface ")
-		return
+		return ErrTypeCasting
 	}
-	newObjects, err := producer.UnMarshalInterfaceToModel(newObjectsInterface, source)
-
-	if err != nil {
-		logging.GetLogger().Error("Error in marshalling to sources datamodel objects : ", err)
-		return
-	}
-
-	for _, object := range newObjects {
-		logging.GetLogger().Info("Creating the key : ", object.GetPrimaryKey())
-		cache.Set(object.GetPrimaryKey(), object)
-	}
-
-	logging.GetLogger().Info("New Objects udated in the map")
 
 	changedObjectsInterface, ok := d.ChangedObjects.([]interface{})
 	if !ok {
-		logging.GetLogger().Error("Error in typecasting the interface ")
-		return
+		return ErrTypeCasting
 	}
-	changedObjects, err := producer.UnMarshalInterfaceToModel(changedObjectsInterface, source)
 
+	newObjects, err := util.UnMarshalInterfaceToModel(newObjectsInterface, source)
 	if err != nil {
-		logging.GetLogger().Error("Error in marshalling to sources datamodel objects : ", err)
-		return
+		return err
 	}
+	changedObjects, err := util.UnMarshalInterfaceToModel(changedObjectsInterface, source)
+	if err != nil {
+		return err
+	}
+
+	for _, object := range newObjects {
+		cache.Set(object.GetPrimaryKey(), object)
+	}
+
+	logging.GetLogger().Info("New Objects updated in the map")
 
 	for _, object := range changedObjects {
-		logging.GetLogger().Info("Updating the key : ", object.GetPrimaryKey())
 		cache.Set(object.GetPrimaryKey(), object)
 	}
 
@@ -125,18 +149,16 @@ func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) 
 	missingKeys := d.MissingKeys
 
 	for _, key := range missingKeys {
-		logging.GetLogger().Info("Deleting the key : ", key)
 		cache.Delete(key)
 	}
 
 	logging.GetLogger().Info("Deleted Objects  in the map")
 
+	return nil
+
 }
 
-func getSnapshotKey(source sources.DataModel) string {
-	return snapshot.AnnouncedVersionKeyName(source.GetNameSpace(), source.GetDataName())
-}
-
+//getDiffBetweenVersions returns all the diff required to reach from version1 to version2
 func getDiffBetweenVersions(source sources.DataModel, version1, version2 string) []string {
 
 	v1 := snapshot.GetVersionNumber(version1)
@@ -151,43 +173,17 @@ func getDiffBetweenVersions(source sources.DataModel, version1, version2 string)
 	return diffs
 }
 
-func (c *clientSnapshots) GetCurrentSnapshot(key string) string {
-	c.RLock()
-	defer c.RUnlock()
-	val, ok := c.Snapshots[key]
-	if !ok {
-		return ""
-	}
-	return val
-}
-
-func (c *clientSnapshots) UpdateCurrentSnapshot(key string, version string) {
-	c.Lock()
-	defer c.Unlock()
-	c.Snapshots[key] = version
-}
-
-func BuildSnapshot(lastAnnouncedSnapshot string, model sources.DataModel, cache GollowCache) error {
-	// Unmarshal the data into the sources.DataModel
+func loadSnapshot(lastAnnouncedSnapshot string, model sources.DataModel) ([]sources.DataModel, error) {
 
 	dataBytes, err := snapshot.ReadSnapshot(lastAnnouncedSnapshot)
 	if err != nil {
-		logging.GetLogger().Error("Error in reading the last announced snapshot : ", lastAnnouncedSnapshot)
-		return err
+		return nil, err
 	}
 
-	data, err := producer.UnMarshalDataModelsBytes(dataBytes, model.NewDataRef())
-
+	data, err := util.UnMarshalDataModelsBytes(dataBytes, model.NewDataRef())
 	if err != nil {
-		logging.GetLogger().Error("Error in un marshalling data bytes : ", err)
-		return err
+		return nil, err
 	}
 
-	logging.GetLogger().Info("Length of data from snapshot : ", len(data))
-
-	logging.GetLogger().Info("first item ", data[0].GetPrimaryKey())
-	logging.GetLogger().Info("second  item ", data[1].GetPrimaryKey())
-	BuildCache(data, cache)
-
-	return nil
+	return data, nil
 }

@@ -20,6 +20,7 @@ func BuildCache(data []sources.DataModel, cache GollowCache) {
 	for i := 0; i < len(data); i++ {
 		if i%1000 == 0 {
 			logging.GetLogger().Info("i :", i)
+			//TODO : add some random sleep to avoid starvation for read
 		}
 		cache.Set(data[i].GetPrimaryKey(), data[i])
 	}
