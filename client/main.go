@@ -5,9 +5,12 @@ import (
 	"gollow/client/cache"
 	"gollow/client/cache/client_datamodel"
 	"gollow/client/server"
+	"gollow/config"
+	"gollow/core/snapshot"
+	"gollow/core/storage"
 	"gollow/logging"
 	"gollow/server/api"
-	"gollow/sources/datamodel"
+	"gollow/sources/datamodel/dummy"
 	"google.golang.org/grpc"
 )
 
@@ -40,11 +43,15 @@ func Init(ctx context.Context) {
 	}
 	logging.GetLogger().Info("Response from server: %s", response.Greeting)
 
+	//initialise everything here
+	snapshotStorage := storage.NewStorage(config.GlobalConfig.AnnouncedVersion)
+	snapshot.Init(snapshotStorage)
+
 	go cache.ReadValue()
 	cache.UpdateSnapshots(ctx)
 
 }
 
 func RegisterDataModels() {
-	cache.Register(datamodel.DummyDataRef, client_datamodel.DummyDataCache)
+	cache.Register(&dummy.DummyData{}, client_datamodel.DummyDataCache)
 }

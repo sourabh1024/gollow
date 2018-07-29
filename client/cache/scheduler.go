@@ -6,7 +6,7 @@ import (
 	"gollow/logging"
 	"gollow/server/api"
 	"gollow/sources"
-	"gollow/sources/datamodel"
+	"gollow/sources/datamodel/dummy"
 	"google.golang.org/grpc"
 	"sync"
 	"time"
@@ -18,7 +18,7 @@ func UpdateSnapshots(ctx context.Context) {
 	models := GetRegisteredModels()
 	for model, cache := range models {
 		wg.Add(1)
-		go UpdateFirstTimeSnapshot(GetProducerClient(), ctx, model, cache)
+		go UpdateFirstTimeSnapshot(ctx, model, cache)
 		ticker := time.NewTicker(time.Duration(model.CacheDuration()))
 		quit := make(chan struct{})
 		go func() {
@@ -32,8 +32,8 @@ func UpdateSnapshots(ctx context.Context) {
 						logging.GetLogger().Fatal("Error when calling SayHello: %s", err)
 					}
 					logging.GetLogger().Info("Response from server: %s", response.Greeting)
-					logging.GetLogger().Info("Updating  Snapshot : " + "-" + model.GetNameSpace() + "-" + model.GetDataName())
-					FetchSnapshot(client, ctx, model, cache)
+					logging.GetLogger().Info("Updating  Snapshot : " + "-" + model.GetDataName())
+					FetchSnapshot(ctx, model, cache)
 				case <-quit:
 					ticker.Stop()
 					return
@@ -45,9 +45,9 @@ func UpdateSnapshots(ctx context.Context) {
 	wg.Wait()
 }
 
-func UpdateFirstTimeSnapshot(client api.PingClient, ctx context.Context, model sources.DataModel, cache GollowCache) {
+func UpdateFirstTimeSnapshot(ctx context.Context, model sources.ProtoDataModel, cache GollowCache) {
 	defer wg.Done()
-	FetchSnapshot(client, ctx, model, cache)
+	FetchSnapshot(ctx, model, cache)
 }
 
 // for demo purpose
@@ -61,21 +61,21 @@ func ReadValue() {
 				// do stuff
 				logging.GetLogger().Info("Read data")
 				val, err := client_datamodel.DummyDataCache.Get("1")
-				client_datamodel.DummyDataCache.Cache.Range(func(key, value interface{}) bool {
-					logging.GetLogger().Info("val : ", value)
-					return true
-				})
+				//client_datamodel.DummyDataCache.Cache.Range(func(key, value interface{}) bool {
+				//	logging.GetLogger().Info("value fetched : ", value)
+				//	return true
+				//})
 				if err != nil {
 					logging.GetLogger().Error("Error in reading value : ", err)
 					continue
 				}
-				dummyData, ok := val.(*datamodel.DummyData)
+				dummyData, ok := val.(*dummy.DummyData)
 				if !ok {
 					logging.GetLogger().Error("Error in parsing value : ")
 					continue
 				}
 				logging.GetLogger().Info("created at : ", dummyData.FirstName)
-				logging.GetLogger().Info("Value for id 1 : ", val)
+				logging.GetLogger().Info("Value for id 1 : ", dummyData.MaxDebit)
 			case <-quit:
 				ticker.Stop()
 				return

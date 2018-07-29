@@ -9,17 +9,17 @@ var (
 )
 
 type modelsImpl struct {
-	modelsList map[sources.DataModel]struct{}
+	modelsList map[sources.ProtoDataModel]struct{}
 }
 
 func init() {
-	models.modelsList = make(map[sources.DataModel]struct{})
+	models.modelsList = make(map[sources.ProtoDataModel]struct{})
 }
 
-func Register(model sources.DataModel, val struct{}) {
+func Register(model sources.ProtoDataModel, val struct{}) {
 	models.modelsList[model] = val
 }
 
-func GetRegisteredModels() map[sources.DataModel]struct{} {
+func GetRegisteredModels() map[sources.ProtoDataModel]struct{} {
 	return models.modelsList
 }

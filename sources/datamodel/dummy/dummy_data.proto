@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package dummy;
+
+message DummyData {
+    int64 ID = 1;
+    int64 PID =2;
+    string FirstName = 3;
+    string LastName = 4;
+    double Balance = 5;
+    double MaxCredit = 6;
+    double MaxDebit = 7;
+    double Score = 8;
+    bool IsActive = 9;
+    int64 Created_At = 10;
+}
+
+message DummyDataBag {
+    repeated DummyData Entries = 1;
+}

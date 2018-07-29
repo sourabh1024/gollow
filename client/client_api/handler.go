@@ -4,7 +4,7 @@ import (
 	"context"
 	"gollow/client/cache/client_datamodel"
 	"gollow/logging"
-	"gollow/sources/datamodel"
+	"gollow/sources/datamodel/dummy"
 )
 
 // Server represents the gRPC server
@@ -26,7 +26,7 @@ func (s *Server) GetDummyData(ctx context.Context, in *DummyDataRequest) (*Dummy
 		return response, nil
 	}
 
-	dummyData, ok := val.(*datamodel.DummyData)
+	dummyData, ok := val.(*dummy.DummyData)
 	if !ok {
 		logging.GetLogger().Error("error in typecasting dummydata data : %+v", err)
 		return response, nil

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	"gollow/core"
 	"gollow/core/snapshot"
 	"gollow/core/storage"
 	"gollow/logging"
-	"gollow/server/api"
 	"gollow/sources"
 	"gollow/util"
 	"time"
@@ -19,18 +19,16 @@ var (
 	ErrTypeCasting = errors.New("error in typecasting the interface")
 )
 
-func fetchAnnouncedVersion(client api.PingClient, ctx context.Context, source sources.DataModel) (string, error) {
-	announcedVersion, err := client.GetAnnouncedVersion(ctx,
-		&api.AnnouncedVersionRequest{Namespace: source.GetNameSpace(), Entity: source.GetDataName()})
-
+func fetchAnnouncedVersion(ctx context.Context, model sources.ProtoDataModel) (string, error) {
+	announcedVersion, err := snapshot.SnapshotImpl.GetLatestAnnouncedVersion(model.GetDataName())
 	if err != nil {
-		logging.GetLogger().Error("Error in fetching current snapshot version for : %s , %s: %+v", source.GetNameSpace(), source.GetDataName(), err)
+		logging.GetLogger().Error("Error in fetching current snapshot version for : %s : %+v", model.GetDataName(), err)
 		return "", err
 	}
-	return announcedVersion.Currentversion, nil
+	return announcedVersion, nil
 }
 
-func FetchFullSnapshot(currentVersion string, source sources.DataModel, cache GollowCache) error {
+func FetchFullSnapshot(currentVersion string, source sources.ProtoDataModel, cache GollowCache) error {
 
 	logging.GetLogger().Info("Building cache with full snapshot  : %s ", currentVersion)
 	data, err := loadSnapshot(currentVersion, source)
@@ -42,14 +40,14 @@ func FetchFullSnapshot(currentVersion string, source sources.DataModel, cache Go
 	return nil
 }
 
-func FetchSnapshot(client api.PingClient, ctx context.Context, source sources.DataModel, cache GollowCache) {
+func FetchSnapshot(ctx context.Context, source sources.ProtoDataModel, cache GollowCache) {
 
 	defer util.Duration(time.Now(),
-		fmt.Sprintf("fetch snapshot : %s-%s", source.GetNameSpace(), source.GetDataName()))
+		fmt.Sprintf("fetch snapshot : %s", source.GetDataName()))
 
 	currentVersion, ok := GetSnapshotVersion().getSnapshotVersion(source)
 
-	announcedVersion, err := fetchAnnouncedVersion(client, ctx, source)
+	announcedVersion, err := fetchAnnouncedVersion(ctx, source)
 	if err != nil || announcedVersion == "" {
 		logging.GetLogger().Error("Error in fetching the announced version , err : %+v", err)
 		return
@@ -77,7 +75,7 @@ func FetchSnapshot(client api.PingClient, ctx context.Context, source sources.Da
 	}
 }
 
-func applyAllDiffs(diffs []string, source sources.DataModel, cache GollowCache) error {
+func applyAllDiffs(diffs []string, source sources.ProtoDataModel, cache GollowCache) error {
 
 	for _, diffName := range diffs {
 
@@ -110,38 +108,19 @@ func getDiffObject(diffName string) (*core.DiffObject, error) {
 }
 
 // i don't like this method but I am making peace with it now.. -_-
-func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) error {
+func applyDiff(model sources.ProtoDataModel, d *core.DiffObject, cache GollowCache) error {
 
 	defer util.Duration(time.Now(), "apply-diff")
 	logging.GetLogger().Info("applying diff : ", d.Namespace)
 
-	newObjectsInterface, ok := d.NewObjects.([]interface{})
-	if !ok {
-		return ErrTypeCasting
-	}
-
-	changedObjectsInterface, ok := d.ChangedObjects.([]interface{})
-	if !ok {
-		return ErrTypeCasting
-	}
-
-	newObjects, err := util.UnMarshalInterfaceToModel(newObjectsInterface, source)
-	if err != nil {
-		return err
-	}
-	changedObjects, err := util.UnMarshalInterfaceToModel(changedObjectsInterface, source)
-	if err != nil {
-		return err
-	}
-
-	for _, object := range newObjects {
-		cache.Set(object.GetPrimaryKey(), object)
+	for _, object := range d.NewObjects.GetEntries() {
+		cache.Set(object.GetPrimaryID(), object)
 	}
 
 	logging.GetLogger().Info("New Objects updated in the map")
 
-	for _, object := range changedObjects {
-		cache.Set(object.GetPrimaryKey(), object)
+	for _, object := range d.ChangedObjects.GetEntries() {
+		cache.Set(object.GetPrimaryID(), object)
 	}
 
 	logging.GetLogger().Info("Changed Objects updated in the map")
@@ -159,7 +138,7 @@ func applyDiff(source sources.DataModel, d *core.DiffObject, cache GollowCache) 
 }
 
 //getDiffBetweenVersions returns all the diff required to reach from version1 to version2
-func getDiffBetweenVersions(source sources.DataModel, version1, version2 string) []string {
+func getDiffBetweenVersions(source sources.ProtoDataModel, version1, version2 string) []string {
 
 	v1 := snapshot.GetVersionNumber(version1)
 	v2 := snapshot.GetVersionNumber(version2)
@@ -173,14 +152,15 @@ func getDiffBetweenVersions(source sources.DataModel, version1, version2 string)
 	return diffs
 }
 
-func loadSnapshot(lastAnnouncedSnapshot string, model sources.DataModel) ([]sources.DataModel, error) {
+func loadSnapshot(lastAnnouncedSnapshot string, model sources.ProtoDataModel) (sources.Bag, error) {
 
 	dataBytes, err := snapshot.ReadSnapshot(lastAnnouncedSnapshot)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := util.UnMarshalDataModelsBytes(dataBytes, model.NewDataRef())
+	data := model.NewBag()
+	err = proto.Unmarshal(dataBytes, data)
 	if err != nil {
 		return nil, err
 	}

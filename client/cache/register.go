@@ -9,17 +9,17 @@ var (
 )
 
 type modelsImpl struct {
-	modelsList map[sources.DataModel]GollowCache
+	modelsList map[sources.ProtoDataModel]GollowCache
 }
 
 func init() {
-	models.modelsList = make(map[sources.DataModel]GollowCache)
+	models.modelsList = make(map[sources.ProtoDataModel]GollowCache)
 }
 
-func Register(model sources.DataModel, cache GollowCache) {
+func Register(model sources.ProtoDataModel, cache GollowCache) {
 	models.modelsList[model] = cache
 }
 
-func GetRegisteredModels() map[sources.DataModel]GollowCache {
+func GetRegisteredModels() map[sources.ProtoDataModel]GollowCache {
 	return models.modelsList
 }

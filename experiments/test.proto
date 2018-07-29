@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package experiments;
+
+
+message Test {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    string country = 4;
+}
+
+
+message TestBag {
+    repeated Test entries =1;
+}

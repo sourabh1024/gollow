@@ -7,7 +7,7 @@ import (
 	"gollow/core/storage"
 	"gollow/producer"
 	"gollow/server"
-	"gollow/sources/datamodel"
+	"gollow/sources/datamodel/dummy"
 )
 
 func main() {
@@ -29,5 +29,5 @@ func Init(ctx context.Context) {
 }
 
 func RegisterDataModel() {
-	producer.Register(datamodel.DummyDataRef, struct{}{})
+	producer.Register(&dummy.DummyData{}, struct{}{})
 }

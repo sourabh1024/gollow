@@ -1,6 +1,6 @@
 {
   "MySQLConfig" :{
-    "dsn":"root:password@/test?parseTime=true",
+    "dsn":"root:password@tcp(localhost:3307)/test?parseTime=true",
     "maxIdle":1000,
     "maxOpen":10
   },

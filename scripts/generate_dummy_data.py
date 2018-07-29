@@ -23,7 +23,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    db = MySQLdb.connect(host='localhost',
+    db = MySQLdb.connect(host='127.0.0.1',
+                         port=3307,
                          user='root',
                          passwd='password',
                          db='test')
@@ -39,7 +40,7 @@ if __name__ == '__main__':
         if num_rows % 100 == 0:
             print("Inserting row number : " + str(num_rows))
         try:
-            cur.execute("""INSERT INTO dummy_data (pid,first_name, last_name,
+            cur.execute("""INSERT INTO dummy_data_large_5 (pid,first_name, last_name,
             balance, max_credit, max_debit, score, is_active) VALUES ({},'{}',
             '{}',{},{},{},{},{})""".format(int(num_rows), "firstname", "lastname",10, 12, 2, 1.4, 1))
         except Exception as e:

@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"gollow/core/snapshot"
 	"gollow/sources"
 	"sync"
 )
@@ -16,20 +15,22 @@ type snapshotVersion struct {
 
 func GetSnapshotVersion() *snapshotVersion {
 	versionOnce.Do(func() {
-		version = &snapshotVersion{}
+		version = &snapshotVersion{
+			snapshotsVersions: make(map[string]string, 0),
+		}
 	})
 	return version
 }
 
-func (s *snapshotVersion) getSnapshotVersion(model sources.DataModel) (string, bool) {
+func (s *snapshotVersion) getSnapshotVersion(model sources.ProtoDataModel) (string, bool) {
 	val, ok := s.snapshotsVersions[getSnapshotKey(model)]
 	return val, ok
 }
 
-func (s *snapshotVersion) updateSnapshotVersion(model sources.DataModel, newVersion string) {
+func (s *snapshotVersion) updateSnapshotVersion(model sources.ProtoDataModel, newVersion string) {
 	s.snapshotsVersions[getSnapshotKey(model)] = newVersion
 }
 
-func getSnapshotKey(model sources.DataModel) string {
-	return snapshot.AnnouncedVersionKeyName(model.GetNameSpace(), model.GetDataName())
+func getSnapshotKey(model sources.ProtoDataModel) string {
+	return model.GetDataName()
 }

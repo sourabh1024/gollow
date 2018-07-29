@@ -87,8 +87,8 @@ func (s *snapshotImpl) UpdateLatestAnnouncedVersion(keyName, newVersion string) 
 }
 
 func loadAnnouncedVersion() (map[string]string, error) {
-	snapshotStorage.RLock()
-	defer snapshotStorage.RUnlock()
+	//snapshotStorage.RLock()
+	//defer snapshotStorage.RUnlock()
 	data, err := snapshotStorage.storage.Read()
 
 	if err != nil {
@@ -132,8 +132,4 @@ func WriteNewSnapshot(fileName string, data []byte) error {
 func ReadSnapshot(fileName string) ([]byte, error) {
 	snapshotStorage := storage.NewStorage(fileName)
 	return snapshotStorage.Read()
-}
-
-func AnnouncedVersionKeyName(namespace, entityName string) string {
-	return namespace + Separator + entityName
 }

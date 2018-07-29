@@ -21,7 +21,7 @@ func (d *dummyDataCache) Get(key string) (interface{}, error) {
 	return val, nil
 }
 
-func (d *dummyDataCache) Set(key string, value sources.DataModel) {
+func (d *dummyDataCache) Set(key string, value sources.Message) {
 	d.Cache.Store(key, value)
 }
 
