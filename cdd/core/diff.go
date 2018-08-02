@@ -27,23 +27,18 @@ type DiffObject struct {
 	MissingKeys    []string    `json:"missing_keys"`
 }
 
-type Diff interface {
-	GetDiffName(model sources.ProtoDataModel, prevVersion, currVersion int64) string
-	CreateNewDiff(model sources.ProtoDataModel, prevData, currData sources.Bag, prevVersion, currVersion int64) error
-}
-
-func (d *DiffObject) GetDiffName(model sources.ProtoDataModel, prevVersion, currVersion int64) string {
+func (d *DiffObject) GetDiffName(model sources.DataModel, prevVersion, currVersion int64) string {
 	return "diff" + DiffSeparator + model.GetDataName() + DiffSeparator + strconv.FormatInt(prevVersion, 10) + DiffSeparator + strconv.FormatInt(currVersion, 10)
 }
 
-func (d *DiffObject) CreateNewDiff(model sources.ProtoDataModel, prevData, currData sources.Bag, prevVersion, currVersion int64) (bool, error) {
+func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData sources.Bag, prevVersion, currVersion int64) (bool, error) {
 	diffName := d.GetDiffName(model, prevVersion, currVersion)
 	logging.GetLogger().Info("DiffObject name produced : ", diffName)
 	diffStorage := storage.NewStorage(diffName)
 	return d.createDiff(model, prevData, currData, prevVersion, currVersion, diffStorage)
 }
 
-func (d *DiffObject) createDiff(model sources.ProtoDataModel, prevData, currData sources.Bag,
+func (d *DiffObject) createDiff(model sources.DataModel, prevData, currData sources.Bag,
 	prevVersion, currVersion int64, store storage.Storage) (bool, error) {
 
 	defer util.Duration(time.Now(), "CreateNewDiff")
@@ -63,7 +58,7 @@ func (d *DiffObject) createDiff(model sources.ProtoDataModel, prevData, currData
 	return true, nil
 }
 
-func (d *DiffObject) SaveDiff(store storage.Storage, delta *DiffObject, model sources.ProtoDataModel, prevVersion, currVersion int64) error {
+func (d *DiffObject) SaveDiff(store storage.Storage, delta *DiffObject, model sources.DataModel, prevVersion, currVersion int64) error {
 	diffBytes, err := marshalDiff(delta)
 	if err != nil {
 		logging.GetLogger().Error("Error in marshalling diff : ", diffBytes)
@@ -77,7 +72,7 @@ func (d *DiffObject) SaveDiff(store storage.Storage, delta *DiffObject, model so
 	return err
 }
 
-func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model sources.ProtoDataModel) *DiffObject {
+func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model sources.DataModel) *DiffObject {
 
 	defer util.Duration(time.Now(), fmt.Sprintf("GetDiffBetweenModels for : %s", model.GetDataName()))
 
@@ -104,7 +99,7 @@ func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model source
 	return diff
 }
 
-func (d *DiffObject) findNewOrChangedKeys(oldDataMap, newDataMap map[string]sources.Message, model sources.ProtoDataModel) {
+func (d *DiffObject) findNewOrChangedKeys(oldDataMap, newDataMap map[string]sources.Message, model sources.DataModel) {
 	d.NewObjects = model.NewBag()
 	d.ChangedObjects = model.NewBag()
 	for key, newValue := range newDataMap {
@@ -135,7 +130,6 @@ func (d *DiffObject) findMissingKeys(oldDataMap, newDataMap map[string]sources.M
 }
 
 func getDataMaps(oldSource, newSource sources.Bag) (oldMap, newMap map[string]sources.Message) {
-
 	oldMap = make(map[string]sources.Message, len(oldSource.GetEntries()))
 	newMap = make(map[string]sources.Message, len(newSource.GetEntries()))
 
@@ -153,9 +147,10 @@ func getDataMaps(oldSource, newSource sources.Bag) (oldMap, newMap map[string]so
 	wg.Wait()
 	return oldMap, newMap
 }
+
 func getMapFromDataModel(d sources.Bag, result map[string]sources.Message) {
 
-	defer util.Duration(time.Now(), fmt.Sprintf("getMapFromDataModel for len : %d"))
+	defer util.Duration(time.Now(), fmt.Sprintf("getMapFromDataModel for len : %d", len(d.GetEntries())))
 	data := d.GetEntries()
 	lenData := len(data)
 

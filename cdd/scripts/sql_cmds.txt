@@ -1,0 +1,3 @@
+
+
+update dummy_data set first_name = "ok" where id =1;

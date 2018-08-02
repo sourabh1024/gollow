@@ -25,7 +25,7 @@ type result struct {
 	state string
 }
 
-func ProduceModel(model sources.ProtoDataModel) {
+func ProduceModel(model sources.DataModel) {
 
 	defer util.Duration(time.Now(), fmt.Sprintf("ProduceModel for : %s", model.GetDataName()))
 
@@ -122,7 +122,7 @@ func ProduceModel(model sources.ProtoDataModel) {
 }
 
 //func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byte) error {
-func storeCurrentSnapshot(model sources.ProtoDataModel, prevVersion int64, data []byte) error {
+func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byte) error {
 	newSnapshotFileName := getAnnouncedVersionName(model, prevVersion)
 	err := snapshot.WriteNewSnapshot(newSnapshotFileName, data)
 	if err != nil {
@@ -131,7 +131,7 @@ func storeCurrentSnapshot(model sources.ProtoDataModel, prevVersion int64, data 
 	return snapshot.SnapshotImpl.UpdateLatestAnnouncedVersion(model.GetDataName(), newSnapshotFileName)
 }
 
-func loadCurrentData(model sources.ProtoDataModel, wg *sync.WaitGroup, response chan result) {
+func loadCurrentData(model sources.DataModel, wg *sync.WaitGroup, response chan result) {
 	defer wg.Done()
 	defer util.Duration(time.Now(), "loadCurrentData")
 
@@ -151,7 +151,7 @@ func loadCurrentData(model sources.ProtoDataModel, wg *sync.WaitGroup, response 
 	}
 }
 
-func loadPreviousData(storage storage.Storage, model sources.ProtoDataModel, wg *sync.WaitGroup, response chan result) {
+func loadPreviousData(storage storage.Storage, model sources.DataModel, wg *sync.WaitGroup, response chan result) {
 	defer wg.Done()
 	defer util.Duration(time.Now(), "loadPreviousData")
 	prevBytes, err := storage.Read()
@@ -181,7 +181,7 @@ func loadPreviousData(storage storage.Storage, model sources.ProtoDataModel, wg 
 	}
 }
 
-func getAnnouncedVersionName(model sources.ProtoDataModel, prevVersion int64) string {
+func getAnnouncedVersionName(model sources.DataModel, prevVersion int64) string {
 	if prevVersion == -1 {
 		return fmt.Sprintf("%s-%d", model.GetDataName(), snapshot.DefaultVersionNumber)
 	}

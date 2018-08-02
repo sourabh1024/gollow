@@ -7,36 +7,37 @@ import (
 )
 
 var _ sources.Bag = &DummyDataBag{}
+var _ sources.Message = &DummyData{}
+var _ sources.DataModel = &DummyData{}
 
 // GetPartitionID implements the Message interface
 func (message DummyData) GetPrimaryID() string {
 	return strconv.FormatInt(message.ID, 10)
 }
 
-// NewBag implements the Message interface
-func (message DummyData) NewBag() sources.Bag {
-	return &DummyDataBag{}
-}
-
 func (message DummyData) LoadAll() (sources.Bag, error) {
-	x := &DummyDataDTO{}
-	return x.LoadAll()
+	return DummyDataRef.LoadAll()
 }
 
 func (message DummyData) CacheDuration() int64 {
 	return int64(time.Duration(2 * time.Minute))
+	//return DummyDataRef.CacheDuration()
 }
 
 func (message DummyData) GetDataName() string {
-	return "dummy_data"
+	return DummyDataRef.GetDataName()
 }
 
-// AddEntry implements the Message interface
+func (message DummyData) NewBag() sources.Bag {
+	return &DummyDataBag{}
+}
+
+// AddEntry implements the Bag interface
 func (data *DummyDataBag) AddEntry(record sources.Message) {
 	data.Entries = append(data.Entries, record.(*DummyData))
 }
 
-// GetEntries implements the Message interface
+// GetEntries implements the Bag interface
 func (data *DummyDataBag) GetEntries() []sources.Message {
 	out := make([]sources.Message, len(data.Entries))
 
@@ -45,4 +46,9 @@ func (data *DummyDataBag) GetEntries() []sources.Message {
 	}
 
 	return out
+}
+
+//NewBag implements the Bag interface
+func (data *DummyDataBag) NewBag() sources.Bag {
+	return &DummyDataBag{}
 }

@@ -37,7 +37,7 @@ func UpdateSnapshots(ctx context.Context) {
 	wg.Wait()
 }
 
-func UpdateFirstTimeSnapshot(ctx context.Context, model sources.ProtoDataModel, cache GollowCache) {
+func UpdateFirstTimeSnapshot(ctx context.Context, model sources.DataModel, cache GollowCache) {
 	defer wg.Done()
 	FetchSnapshot(ctx, model, cache)
 }

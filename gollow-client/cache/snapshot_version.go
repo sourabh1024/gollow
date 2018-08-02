@@ -22,15 +22,15 @@ func GetSnapshotVersion() *snapshotVersion {
 	return version
 }
 
-func (s *snapshotVersion) getSnapshotVersion(model sources.ProtoDataModel) (string, bool) {
+func (s *snapshotVersion) getSnapshotVersion(model sources.DataModel) (string, bool) {
 	val, ok := s.snapshotsVersions[getSnapshotKey(model)]
 	return val, ok
 }
 
-func (s *snapshotVersion) updateSnapshotVersion(model sources.ProtoDataModel, newVersion string) {
+func (s *snapshotVersion) updateSnapshotVersion(model sources.DataModel, newVersion string) {
 	s.snapshotsVersions[getSnapshotKey(model)] = newVersion
 }
 
-func getSnapshotKey(model sources.ProtoDataModel) string {
+func getSnapshotKey(model sources.DataModel) string {
 	return model.GetDataName()
 }

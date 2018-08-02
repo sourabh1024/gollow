@@ -19,7 +19,7 @@ var (
 	ErrTypeCasting = errors.New("error in typecasting the interface")
 )
 
-func fetchAnnouncedVersion(ctx context.Context, model sources.ProtoDataModel) (string, error) {
+func fetchAnnouncedVersion(ctx context.Context, model sources.DataModel) (string, error) {
 	announcedVersion, err := snapshot.SnapshotImpl.GetLatestAnnouncedVersion(model.GetDataName())
 	if err != nil {
 		logging.GetLogger().Error("Error in fetching current snapshot version for : %s : %+v", model.GetDataName(), err)
@@ -28,7 +28,7 @@ func fetchAnnouncedVersion(ctx context.Context, model sources.ProtoDataModel) (s
 	return announcedVersion, nil
 }
 
-func FetchFullSnapshot(currentVersion string, source sources.ProtoDataModel, cache GollowCache) error {
+func FetchFullSnapshot(currentVersion string, source sources.DataModel, cache GollowCache) error {
 
 	logging.GetLogger().Info("Building cache with full snapshot  : %s ", currentVersion)
 	data, err := loadSnapshot(currentVersion, source)
@@ -40,7 +40,7 @@ func FetchFullSnapshot(currentVersion string, source sources.ProtoDataModel, cac
 	return nil
 }
 
-func FetchSnapshot(ctx context.Context, source sources.ProtoDataModel, cache GollowCache) {
+func FetchSnapshot(ctx context.Context, source sources.DataModel, cache GollowCache) {
 
 	defer util.Duration(time.Now(),
 		fmt.Sprintf("fetch snapshot : %s", source.GetDataName()))
@@ -66,6 +66,9 @@ func FetchSnapshot(ctx context.Context, source sources.ProtoDataModel, cache Gol
 	}
 
 	if currentVersion != announcedVersion {
+		if currentVersion < announcedVersion {
+			logging.GetLogger().Error("current version is less than announced version , currVersion : %d , snapshotVersion : %d", currentVersion, announcedVersion)
+		}
 		diffs := getDiffBetweenVersions(source, currentVersion, announcedVersion)
 		err := applyAllDiffs(diffs, source, cache)
 		if err != nil {
@@ -76,7 +79,7 @@ func FetchSnapshot(ctx context.Context, source sources.ProtoDataModel, cache Gol
 	}
 }
 
-func applyAllDiffs(diffs []string, source sources.ProtoDataModel, cache GollowCache) error {
+func applyAllDiffs(diffs []string, source sources.DataModel, cache GollowCache) error {
 
 	for _, diffName := range diffs {
 
@@ -96,7 +99,7 @@ func applyAllDiffs(diffs []string, source sources.ProtoDataModel, cache GollowCa
 	return nil
 }
 
-func getDiffObject(diffName string, model sources.ProtoDataModel) (*core.DiffObject, error) {
+func getDiffObject(diffName string, model sources.DataModel) (*core.DiffObject, error) {
 	diffManager := storage.NewStorage(diffName)
 	data, err := diffManager.Read()
 	if err != nil {
@@ -111,7 +114,7 @@ func getDiffObject(diffName string, model sources.ProtoDataModel) (*core.DiffObj
 }
 
 // i don't like this method but I am making peace with it now.. -_-
-func applyDiff(model sources.ProtoDataModel, d *core.DiffObject, cache GollowCache) error {
+func applyDiff(model sources.DataModel, d *core.DiffObject, cache GollowCache) error {
 
 	defer util.Duration(time.Now(), "apply-diff")
 	logging.GetLogger().Info("applying diff : ", d.Namespace)
@@ -141,7 +144,7 @@ func applyDiff(model sources.ProtoDataModel, d *core.DiffObject, cache GollowCac
 }
 
 //getDiffBetweenVersions returns all the diff required to reach from version1 to version2
-func getDiffBetweenVersions(source sources.ProtoDataModel, version1, version2 string) []string {
+func getDiffBetweenVersions(source sources.DataModel, version1, version2 string) []string {
 
 	v1 := snapshot.GetVersionNumber(version1)
 	v2 := snapshot.GetVersionNumber(version2)
@@ -154,7 +157,7 @@ func getDiffBetweenVersions(source sources.ProtoDataModel, version1, version2 st
 	return diffs
 }
 
-func loadSnapshot(lastAnnouncedSnapshot string, model sources.ProtoDataModel) (sources.Bag, error) {
+func loadSnapshot(lastAnnouncedSnapshot string, model sources.DataModel) (sources.Bag, error) {
 
 	dataBytes, err := snapshot.ReadSnapshot(lastAnnouncedSnapshot)
 	if err != nil {

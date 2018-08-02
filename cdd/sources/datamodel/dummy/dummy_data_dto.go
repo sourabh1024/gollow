@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+//var _ sources.DataModel = &DummyDataDTO{}
+var _ data.Entity = &DummyDataDTO{}
+
 //DummyDataRef is the reference object for DummyData Data
 var DummyDataRef = &DummyDataDTO{}
 
@@ -46,18 +49,8 @@ func (d DummyDataDTO) ToPB() sources.Message {
 }
 
 // NewEntity implements the data.Entity interface.
-func (d *DummyDataDTO) NewDataRef() sources.Bag {
-	return &DummyDataBag{}
-}
-
-// NewEntity implements the data.Entity interface.
 func (d *DummyDataDTO) NewEntity() data.Entity {
 	return &DummyDataDTO{}
-}
-
-//GetNameSpace implements the data.Entity interface
-func (d *DummyDataDTO) GetNameSpace() string {
-	return "test-consumer-group1"
 }
 
 //GetPrimaryKey implements the data.Entity interface
@@ -65,15 +58,23 @@ func (d *DummyDataDTO) GetPrimaryKey() string {
 	return strconv.FormatInt(d.ID, 10)
 }
 
-//GetDataName implements the data.Entity interface
+//GetDataName implements the DataModel interface
 func (d *DummyDataDTO) GetDataName() string {
 	return "dummy_data"
 }
 
-func (d *DummyDataDTO) CacheDuration() int64 {
-	return int64(time.Duration(2 * time.Minute))
-}
+//
+////CacheDuration implements the DataModel interface
+//func (d *DummyDataDTO) CacheDuration() int64 {
+//	return int64(time.Duration(2 * time.Minute))
+//}
+//
+////NewBag implements the DataModel interface
+//func (d *DummyDataDTO) NewBag() sources.Bag {
+//	return &DummyDataBag{}
+//}
 
+//LoadAll implements the DataModel interface
 func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 
 	defer util.Duration(time.Now(), "DummyDataDataFetchFromSQL")
@@ -81,7 +82,7 @@ func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 
 	var result = &DummyDataBag{}
 
-	query := "SELECT * FROM dummy_data_large"
+	query := "SELECT * FROM dummy_data"
 	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.GlobalConfig.MySQLConfig, query, &DummyDataDTO{})
 
 	if err != nil {
@@ -89,7 +90,7 @@ func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 		return result, err
 	}
 
-	defer util.Duration(time.Now(), "DummyData converting")
+	defer util.Duration(time.Now(), "Converting Data")
 
 	lenResult := len(entities)
 
@@ -97,7 +98,7 @@ func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 		entity, ok := entities[i].(*DummyDataDTO)
 
 		if !ok {
-			logging.GetLogger().Error("Error in typecasting the results , err: ", err)
+			logging.GetLogger().Error("Error in typecasting the results , err: %+v", err)
 			continue
 		}
 

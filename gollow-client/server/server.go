@@ -68,8 +68,8 @@ func ServerInit(ctx context.Context) {
 
 	logging.GetLogger().Info("Starting server...")
 
-	restAddress := fmt.Sprintf("%s:%d", "localhost", 8888)
-	grpcAddress := fmt.Sprintf("%s:%d", "localhost", 8889)
+	restAddress := fmt.Sprintf("%s:%d", "localhost", 2222)
+	grpcAddress := fmt.Sprintf("%s:%d", "localhost", 2223)
 
 	go func() {
 		err := startGRPCServer(ctx, grpcAddress)

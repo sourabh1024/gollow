@@ -6,13 +6,6 @@ package data
 */
 type Entity interface {
 
-	// returns the namespace to which this entity belongs
-	GetNameSpace() string
-
-	// returns the name of the data source
-	// should be unique in a namespace
-	GetDataName() string
-
 	// returns the primaryKey for the given struct
 	// it must be unique and collision would lead to unexpected data
 	GetPrimaryKey() string
