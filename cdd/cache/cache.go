@@ -21,6 +21,9 @@ type GollowCache interface {
 	Delete(key string)
 }
 
+//buildCache builds the cache
+//puts all the elements of bag into the cache
+//future : should have some random sleeps to avoid contention on reads
 func buildCache(bag sources.Bag, cache GollowCache) {
 	data := bag.GetEntries()
 	defer util.Duration(time.Now(), fmt.Sprintf("Build Cache for : %d ", len(data)))

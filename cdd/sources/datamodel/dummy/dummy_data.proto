@@ -16,5 +16,5 @@ message DummyData {
 }
 
 message DummyDataBag {
-    repeated DummyData Entries = 1;
+    repeated DummyData Bag = 1;
 }

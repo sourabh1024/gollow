@@ -33,14 +33,14 @@ func (message DummyData) NewBag() sources.Bag {
 
 // AddEntry implements the Bag interface
 func (data *DummyDataBag) AddEntry(record sources.Message) {
-	data.Entries = append(data.Entries, record.(*DummyData))
+	data.Bag = append(data.Bag, record.(*DummyData))
 }
 
 // GetEntries implements the Bag interface
 func (data *DummyDataBag) GetEntries() []sources.Message {
-	out := make([]sources.Message, len(data.Entries))
+	out := make([]sources.Message, len(data.Bag))
 
-	for index, entry := range data.Entries {
+	for index, entry := range data.Bag {
 		out[index] = entry
 	}
 

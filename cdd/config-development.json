@@ -7,6 +7,5 @@
   "storage":{
     "storageType" : "file",
     "announcedVersion" : "announced.version"
-  },
-  "announcedVersion" :"announced.version"
+  }
 }

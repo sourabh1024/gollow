@@ -20,9 +20,8 @@ var (
 )
 
 type Config struct {
-	MySQLConfig      *data.MysqlConfig `json:"MySQLConfig"`
-	AnnouncedVersion string            `json:"announcedVersion"`
-	Storage          *StorageConfig    `json:"storage"`
+	MySQLConfig *data.MysqlConfig `json:"MySQLConfig"`
+	Storage     *StorageConfig    `json:"storage"`
 }
 
 type StorageConfig struct {

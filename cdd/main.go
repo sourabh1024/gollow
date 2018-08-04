@@ -22,7 +22,7 @@ func main() {
 func Init(ctx context.Context) {
 
 	//initialise everything here
-	snapshotStorage := storage.NewStorage(config.GlobalConfig.AnnouncedVersion)
+	snapshotStorage := storage.NewStorage(config.GlobalConfig.Storage.AnnouncedVersion)
 	snapshot.Init(snapshotStorage)
 
 	go producer.ScheduleProducers()
