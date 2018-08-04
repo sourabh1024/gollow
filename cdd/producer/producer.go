@@ -7,6 +7,7 @@ import (
 	"gollow/cdd/core"
 	"gollow/cdd/core/snapshot"
 	"gollow/cdd/core/storage"
+	"gollow/cdd/data"
 	"gollow/cdd/logging"
 	"gollow/cdd/sources"
 	"gollow/cdd/util"
@@ -25,19 +26,26 @@ type result struct {
 	state string
 }
 
+//ProduceModel produces the data for given DataModel
+//1. Load the LastAnnouncedSnapshotName
+//2. Load the Current and PrevData in parallel
+//3. If data is produced for the first time produce data and return
+//4. Generate Diff from curr and prev data if prev data was present
+//5. Store the current snapshot
 func ProduceModel(model sources.DataModel) {
 
 	defer util.Duration(time.Now(), fmt.Sprintf("ProduceModel for : %s", model.GetDataName()))
 
-	logging.GetLogger().Info("Starting data producing for : ", model.GetDataName())
+	logging.GetLogger().Info("Starting data producing for : %s ", model.GetDataName())
 
-	lastAnnouncedSnapshot, err := snapshot.SnapshotImpl.GetLatestAnnouncedVersion(model.GetDataName())
-	if err != nil {
+	lastAnnouncedSnapshot, err := snapshot.VersionImpl.GetVersion(model.GetDataName())
+	if err != nil && err != data.ErrNoData {
 		logging.GetLogger().Error("error in loading snapshot , err : %+v", err)
 		return
 	}
 
-	logging.GetLogger().Info("Last announced snapshot for %s, %s", model.GetDataName(), lastAnnouncedSnapshot)
+	logging.GetLogger().Info("Last announced snapshot for %s, %s", model.GetDataName(),
+		lastAnnouncedSnapshot)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -75,7 +83,6 @@ func ProduceModel(model sources.DataModel) {
 		return
 	}
 
-	//TODO : delegate it to the model interface
 	currBytes, err := proto.Marshal(currData)
 	// save current snapshot
 	if err != nil {
@@ -90,19 +97,31 @@ func ProduceModel(model sources.DataModel) {
 		if err != nil {
 			logging.GetLogger().Error("error in saving current snapshot : %+v", err)
 		}
-		logging.GetLogger().Info("diff produced for the first time for : ", model.GetDataName())
+		logging.GetLogger().Info("snapshot produced for the first time for : ", model.GetDataName())
 		return
 	}
 
-	prevVersion = snapshot.GetVersionNumber(lastAnnouncedSnapshot)
 	if prevDataErr != nil {
-		logging.GetLogger().Error("error in loading the previous data , could not proceed to produce diff, err :+v", err)
+		logging.GetLogger().Error("error in loading the previous data , could not proceed to produce diff, err :+v", prevDataErr)
 		return
+	}
+
+	prevVersion, err = snapshot.VersionImpl.ParseVersionNumber(lastAnnouncedSnapshot)
+	if err != nil {
+		logging.GetLogger().Error("error in parsing the version number from : %s, err : %+v", lastAnnouncedSnapshot, err)
 	}
 
 	// generate diff
 	logging.GetLogger().Info("Generating diff for : ", model.GetDataName())
-	ok, err := core.DiffObjectDao.CreateNewDiff(model, prevData, currData, prevVersion, prevVersion+1)
+	diffParams := &core.DiffParams{
+		Model:       model,
+		OldData:     prevData,
+		NewData:     currData,
+		PrevVersion: prevVersion,
+		CurrVersion: prevVersion + 1,
+	}
+
+	ok, err := diffParams.GenerateNewDiff()
 	if err != nil {
 		logging.GetLogger().Error("error in producing diff , err : %+v", err)
 		return
@@ -113,7 +132,12 @@ func ProduceModel(model sources.DataModel) {
 		return
 	}
 
-	prevVersion = snapshot.GetVersionNumber(lastAnnouncedSnapshot)
+	prevVersion, err = snapshot.VersionImpl.ParseVersionNumber(lastAnnouncedSnapshot)
+	if err != nil {
+		logging.GetLogger().Error("error in parsing announced version from lastAnnounced file : %s , err : :+v", lastAnnouncedSnapshot, err)
+		return
+	}
+
 	err = storeCurrentSnapshot(model, prevVersion, currBytes)
 	if err != nil {
 		logging.GetLogger().Error("error in saving current snapshot : %+v", err)
@@ -121,21 +145,21 @@ func ProduceModel(model sources.DataModel) {
 	return
 }
 
-//func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byte) error {
 func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byte) error {
-	newSnapshotFileName := getAnnouncedVersionName(model, prevVersion)
-	err := snapshot.WriteNewSnapshot(newSnapshotFileName, data)
+	newSnapshotFileName := getNewVersionName(model, prevVersion)
+	store := storage.NewStorage(newSnapshotFileName)
+	_, err := store.Write(data)
 	if err != nil {
 		return err
 	}
-	return snapshot.SnapshotImpl.UpdateLatestAnnouncedVersion(model.GetDataName(), newSnapshotFileName)
+	return snapshot.VersionImpl.UpdateVersion(model.GetDataName(), newSnapshotFileName)
 }
 
 func loadCurrentData(model sources.DataModel, wg *sync.WaitGroup, response chan result) {
 	defer wg.Done()
 	defer util.Duration(time.Now(), "loadCurrentData")
 
-	data, err := model.LoadAll()
+	bytes, err := model.LoadAll()
 	if err != nil {
 		response <- result{
 			state: currentData,
@@ -146,12 +170,13 @@ func loadCurrentData(model sources.DataModel, wg *sync.WaitGroup, response chan 
 
 	response <- result{
 		state: currentData,
-		data:  data,
+		data:  bytes,
 		err:   nil,
 	}
 }
 
-func loadPreviousData(storage storage.Storage, model sources.DataModel, wg *sync.WaitGroup, response chan result) {
+func loadPreviousData(storage storage.Storage, model sources.DataModel,
+	wg *sync.WaitGroup, response chan result) {
 	defer wg.Done()
 	defer util.Duration(time.Now(), "loadPreviousData")
 	prevBytes, err := storage.Read()
@@ -181,9 +206,9 @@ func loadPreviousData(storage storage.Storage, model sources.DataModel, wg *sync
 	}
 }
 
-func getAnnouncedVersionName(model sources.DataModel, prevVersion int64) string {
+func getNewVersionName(model sources.DataModel, prevVersion int64) string {
 	if prevVersion == -1 {
-		return fmt.Sprintf("%s-%d", model.GetDataName(), snapshot.DefaultVersionNumber)
+		return fmt.Sprintf("%s-%d", model.GetDataName(), core.DefaultVersionNumber)
 	}
 	return fmt.Sprintf("%s-%d", model.GetDataName(), prevVersion+1)
 }

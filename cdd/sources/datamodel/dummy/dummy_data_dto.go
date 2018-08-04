@@ -63,17 +63,6 @@ func (d *DummyDataDTO) GetDataName() string {
 	return "dummy_data"
 }
 
-//
-////CacheDuration implements the DataModel interface
-//func (d *DummyDataDTO) CacheDuration() int64 {
-//	return int64(time.Duration(2 * time.Minute))
-//}
-//
-////NewBag implements the DataModel interface
-//func (d *DummyDataDTO) NewBag() sources.Bag {
-//	return &DummyDataBag{}
-//}
-
 //LoadAll implements the DataModel interface
 func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 

@@ -3,7 +3,7 @@ Script insert some dummy data in mysql
 To use install dependencies:
 pip install numpy
 pip install shapely
-pip install mysql-client
+pip install mysql-cache
 """
 
 import argparse

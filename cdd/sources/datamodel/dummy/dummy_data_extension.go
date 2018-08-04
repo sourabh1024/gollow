@@ -20,8 +20,7 @@ func (message DummyData) LoadAll() (sources.Bag, error) {
 }
 
 func (message DummyData) CacheDuration() int64 {
-	return int64(time.Duration(2 * time.Minute))
-	//return DummyDataRef.CacheDuration()
+	return int64(time.Duration(1 * time.Minute))
 }
 
 func (message DummyData) GetDataName() string {

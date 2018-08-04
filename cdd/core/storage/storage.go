@@ -1,5 +1,9 @@
 package storage
 
+import (
+	"gollow/cdd/config"
+)
+
 //Storage interface provides all methods required for read/write/checkExistence
 //of any snapshot or diff
 type Storage interface {
@@ -10,8 +14,15 @@ type Storage interface {
 	Read() ([]byte, error)
 }
 
-//GetStorage gives the current implementation of Storage
-//In future when S3 support is added it should be returned from here
+//NewStorage gives the current implementation of Storage
+//In future when S3/ other buckets support is added it should be returned from here
+//Default it returns file storage
 func NewStorage(fileName string) Storage {
-	return NewFileStorage(fileName)
+	switch storage := config.GlobalConfig.Storage.StorageType; storage {
+	case "file":
+		return NewFileStorage(fileName)
+
+	default:
+		return NewFileStorage(fileName)
+	}
 }

@@ -22,6 +22,12 @@ var (
 type Config struct {
 	MySQLConfig      *data.MysqlConfig `json:"MySQLConfig"`
 	AnnouncedVersion string            `json:"announcedVersion"`
+	Storage          *StorageConfig    `json:"storage"`
+}
+
+type StorageConfig struct {
+	StorageType      string `json:"storageType"`
+	AnnouncedVersion string `json:"announcedVersion"`
 }
 
 func init() {

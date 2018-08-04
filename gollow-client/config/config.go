@@ -18,6 +18,12 @@ var (
 )
 
 type Config struct {
+	AnnouncedVersion string         `json:"announcedVersion"`
+	Storage          *StorageConfig `json:"storage"`
+}
+
+type StorageConfig struct {
+	StorageType      string `json:"storageType"`
 	AnnouncedVersion string `json:"announcedVersion"`
 }
 

@@ -49,7 +49,7 @@ func startRestServer(ctx context.Context, address, grpcAddress string) error {
 
 	mux := runtime.NewServeMux()
 
-	// Setup the client gRPC options
+	// Setup the cache gRPC options
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
 	// Register ping

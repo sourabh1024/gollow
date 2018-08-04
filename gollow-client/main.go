@@ -2,10 +2,9 @@ package main
 
 import (
 	"golang.org/x/net/context"
+	"gollow/cdd/cache"
 	"gollow/cdd/core/snapshot"
-	"gollow/cdd/core/storage"
 	"gollow/cdd/sources/datamodel/dummy"
-	"gollow/gollow-client/cache"
 	"gollow/gollow-client/cache/client_datamodel"
 	"gollow/gollow-client/config"
 	"gollow/gollow-client/server"
@@ -22,14 +21,9 @@ func main() {
 }
 
 func Init(ctx context.Context) {
-
-	//initialise everything here
-	snapshotStorage := storage.NewStorage(config.GlobalConfig.AnnouncedVersion)
-	snapshot.Init(snapshotStorage)
-
-	go cache.ReadValue()
+	//init everything here...
+	snapshot.InitVersionStorage(config.GlobalConfig.Storage.AnnouncedVersion)
 	cache.UpdateSnapshots(ctx)
-
 }
 
 func RegisterDataModels() {

@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-// MysqlConfig struct for initialising mysql based on client specific config.
+// MysqlConfig struct for initialising mysql based on cache specific config.
 type MysqlConfig struct {
 	Dsn          string    `json:"dsn"`
 	MaxIdle      int       `json:"maxIdle"`

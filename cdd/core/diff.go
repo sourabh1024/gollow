@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"gollow/cdd/core/storage"
-	"gollow/cdd/logging"
 	"gollow/cdd/sources"
 	"gollow/cdd/util"
 	"reflect"
@@ -13,72 +12,104 @@ import (
 	"time"
 )
 
-const DiffSeparator = "-"
-
 var (
 	DiffObjectDao = &DiffObject{}
 )
 
+//GenerateDiff interface to generate and save the diff
+type GenerateDiff interface {
+
+	//GenerateNewDiff generates the diff and returns whether diff was produced and error if any
+	//requires all parameters of DiffParams
+	GenerateNewDiff() (bool, error)
+
+	//GetDiffName returns the name of the diff produced based on dataname and prevVersion and currVersion
+	GetDiffName() string
+
+	//LoadDiff loads the given diff name and returns the diffObject using the NewStorage
+	LoadDiff(diffName string) (*DiffObject, error)
+}
+
+//DiffParams represents the diff params required for generating the diff
+type DiffParams struct {
+	Model       sources.DataModel
+	OldData     sources.Bag
+	NewData     sources.Bag
+	PrevVersion int64
+	CurrVersion int64
+}
+
+//DiffObject represents the DiffObject its the final diff which is produced
+//DataName represents the DataName for which data was produced
+//ChangedObjects represents the Bag of Changed object
+//NewObjects represents the Bag of New Objects
+//MissingKeys represents the keys being deleted
 type DiffObject struct {
-	Namespace      string      `json:"namespace"`
-	EntityName     string      `json:"entity_name"`
-	ChangedObjects sources.Bag `json:"changed_objects"`
-	NewObjects     sources.Bag `json:"new_objects"`
-	MissingKeys    []string    `json:"missing_keys"`
+	DataName       string      `json:"dataName"`
+	ChangedObjects sources.Bag `json:"changedObjects"`
+	NewObjects     sources.Bag `json:"newObjects"`
+	MissingKeys    []string    `json:"missingKeys"`
 }
 
-func (d *DiffObject) GetDiffName(model sources.DataModel, prevVersion, currVersion int64) string {
-	return "diff" + DiffSeparator + model.GetDataName() + DiffSeparator + strconv.FormatInt(prevVersion, 10) + DiffSeparator + strconv.FormatInt(currVersion, 10)
+//GetDiffName returns the name of the diff produced based on dataname and prevVersion and currVersion
+func (params *DiffParams) GetDiffName() string {
+	return DiffPrefix + Separator +
+		params.Model.GetDataName() + Separator +
+		strconv.FormatInt(params.PrevVersion, 10) + Separator +
+		strconv.FormatInt(params.CurrVersion, 10)
 }
 
-func (d *DiffObject) CreateNewDiff(model sources.DataModel, prevData, currData sources.Bag, prevVersion, currVersion int64) (bool, error) {
-	diffName := d.GetDiffName(model, prevVersion, currVersion)
-	logging.GetLogger().Info("DiffObject name produced : ", diffName)
-	diffStorage := storage.NewStorage(diffName)
-	return d.createDiff(model, prevData, currData, prevVersion, currVersion, diffStorage)
-}
-
-func (d *DiffObject) createDiff(model sources.DataModel, prevData, currData sources.Bag,
-	prevVersion, currVersion int64, store storage.Storage) (bool, error) {
-
+//GenerateNewDiff implements the GenerateDiff interface
+func (params *DiffParams) GenerateNewDiff() (bool, error) {
 	defer util.Duration(time.Now(), "CreateNewDiff")
-	delta := getDiffBetweenModels(prevData, currData, model)
+	diff := getDiffBetweenModels(params.OldData, params.NewData, params.Model)
 
-	if !shouldDiffBeProduced(delta) {
+	if !shouldDiffBeProduced(diff) {
 		return false, nil
 	}
-
-	delta.EntityName = model.GetDataName()
-
-	err := d.SaveDiff(store, delta, model, prevVersion, currVersion)
+	err := saveDiff(params, diff)
 	if err != nil {
 		return false, err
 	}
-
 	return true, nil
 }
 
-func (d *DiffObject) SaveDiff(store storage.Storage, delta *DiffObject, model sources.DataModel, prevVersion, currVersion int64) error {
-	diffBytes, err := marshalDiff(delta)
+//LoadDiff loads the given diff name and returns the diffObject using the NewStorage
+func (params *DiffParams) LoadDiff(diffName string) (*DiffObject, error) {
+	store := storage.NewStorage(diffName)
+	data, err := store.Read()
 	if err != nil {
-		logging.GetLogger().Error("Error in marshalling diff : ", diffBytes)
-		return err
+		return nil, err
 	}
-
-	_, err = store.Write(diffBytes)
-	if err != nil {
-		logging.GetLogger().Error("Error in writing diff : ", err)
-	}
-	return err
+	d := &DiffObject{}
+	d.ChangedObjects = params.Model.NewBag()
+	d.NewObjects = params.Model.NewBag()
+	err = json.Unmarshal(data, &d)
+	return d, err
 }
 
+//saveDiff saves the diff object
+func saveDiff(params *DiffParams, diff *DiffObject) error {
+	store := storage.NewStorage(params.GetDiffName())
+	diffBytes, err := marshalDiff(diff)
+	if err != nil {
+		return err
+	}
+	_, err = store.Write(diffBytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//getDiffBetweenModels finds the diff between old and new data
 func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model sources.DataModel) *DiffObject {
 
 	defer util.Duration(time.Now(), fmt.Sprintf("GetDiffBetweenModels for : %s", model.GetDataName()))
 
 	diff := &DiffObject{}
 
-	//parllelize it
+	//fetch the map of primaryKey -> Data to generate the diff
 	oldDataMap, newDataMap := getDataMaps(oldData, newData)
 
 	var wg sync.WaitGroup
@@ -99,9 +130,12 @@ func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model source
 	return diff
 }
 
+//findNewOrChangedKeys finds the object which are new or whose any value have been changed
 func (d *DiffObject) findNewOrChangedKeys(oldDataMap, newDataMap map[string]sources.Message, model sources.DataModel) {
+
 	d.NewObjects = model.NewBag()
 	d.ChangedObjects = model.NewBag()
+
 	for key, newValue := range newDataMap {
 
 		oldValue, ok := oldDataMap[key]
@@ -119,9 +153,11 @@ func (d *DiffObject) findNewOrChangedKeys(oldDataMap, newDataMap map[string]sour
 	}
 }
 
+//findMissingKeys finds the missing keys from the newData map compared to oldData map
 func (d *DiffObject) findMissingKeys(oldDataMap, newDataMap map[string]sources.Message) {
 	missingKeys := make([]string, 0)
 	for key, _ := range oldDataMap {
+		//key is missing from newDataMap means key has been deleted
 		if _, ok := newDataMap[key]; !ok {
 			missingKeys = append(missingKeys, key)
 		}
@@ -129,6 +165,7 @@ func (d *DiffObject) findMissingKeys(oldDataMap, newDataMap map[string]sources.M
 	d.MissingKeys = missingKeys
 }
 
+//getDataMaps returns the map for old and new Data
 func getDataMaps(oldSource, newSource sources.Bag) (oldMap, newMap map[string]sources.Message) {
 	oldMap = make(map[string]sources.Message, len(oldSource.GetEntries()))
 	newMap = make(map[string]sources.Message, len(newSource.GetEntries()))

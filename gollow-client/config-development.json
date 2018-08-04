@@ -4,5 +4,9 @@
     "maxIdle":1000,
     "maxOpen":10
   },
+  "storage":{
+    "storageType" : "file",
+    "announcedVersion" : "announced.version"
+  },
   "announcedVersion" :"announced.version"
 }

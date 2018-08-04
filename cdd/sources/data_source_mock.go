@@ -18,6 +18,7 @@ func (m MockDataModel) CacheDuration() int64 {
 	return int64(args.Int(0))
 }
 
+//NewBag implements the DataModel interface
 func (m MockDataModel) NewBag() Bag {
 	args := m.Called()
 

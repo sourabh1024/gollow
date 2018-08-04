@@ -1,7 +1,14 @@
 package snapshot
 
-type snapshot interface {
-	GetVersion(keyName string) (string, error)
+import "gollow/cdd/sources"
 
-	UpdateVersion(keyName, newVersion string) error
+//Snapshot represents the snapshot being produced
+//Snapshot is the whole data image being produced
+type Snapshot interface {
+
+	//Load loads the snapshot of given model type into Model Bag from the given storage and file
+	Load(model sources.DataModel) (sources.Bag, error)
+
+	//Save saves the Model Bag into the given storage and file name
+	Save(sources.Bag) (int, error)
 }
