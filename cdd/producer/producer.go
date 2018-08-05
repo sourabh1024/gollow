@@ -1,7 +1,6 @@
 package producer
 
 import (
-	"errors"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"gollow/cdd/core"
@@ -20,7 +19,11 @@ const (
 	previousData = "prevData"
 )
 
-type result struct {
+//dataLoadResult is used to store the results of the data load
+//data is the data being loaded , in case of error or no data it is nil
+//err stores the error if any during loading the data
+//state denotes the state for which data is being loaded , currently it is currentData and prevData
+type dataLoadResult struct {
 	data  sources.Bag
 	err   error
 	state string
@@ -44,15 +47,88 @@ func ProduceModel(model sources.DataModel) {
 		return
 	}
 
-	logging.GetLogger().Info("Last announced snapshot for %s, %s", model.GetDataName(),
+	logging.GetLogger().Info("Last announced snapshot for %s, is : %s", model.GetDataName(),
 		lastAnnouncedSnapshot)
 
+	currData, prevData, ok := loadPrevAndCurrData(model, lastAnnouncedSnapshot)
+
+	if !ok {
+		// error in loading data , abort
+		return
+	}
+
+	currBytes, err := proto.Marshal(currData)
+	// Error in marshalling current data snapshot cannot be produced
+	if err != nil {
+		logging.GetLogger().Error("Error in marshalling current data, err :+v", err)
+		return
+	}
+
+	// default value
+	prevVersion := int64(-1)
+	if lastAnnouncedSnapshot == "" {
+		err := storeCurrentSnapshot(model, prevVersion, currBytes)
+		if err != nil {
+			logging.GetLogger().Error("Error in saving current snapshot : %+v", err)
+		}
+		logging.GetLogger().Info("Snapshot produced for the first time for : %s", model.GetDataName())
+
+		return
+	}
+
+	prevVersion, err = snapshot.VersionImpl.ParseVersionNumber(lastAnnouncedSnapshot)
+	if err != nil {
+		logging.GetLogger().Error("Error in parsing the version number from : %s, err : %+v", lastAnnouncedSnapshot, err)
+	}
+
+	// generate diff
+	ok = generateDiffFromData(model, prevData, currData, prevVersion, err)
+	if !ok {
+		//diff was not produced
+		return
+	}
+
+	//store the current data snapshot
+	err = storeCurrentSnapshot(model, prevVersion, currBytes)
+	if err != nil {
+		logging.GetLogger().Error("Error in saving current snapshot : %+v", err)
+	}
+	return
+}
+
+// generateDiffFromData generates the diff from given data model , current and previous data bag abd version information
+// returns a bool whether the diff was generated or not
+// in case of errors or no change in data diff is not generated
+func generateDiffFromData(model sources.DataModel, prevData sources.Bag, currData sources.Bag, prevVersion int64, err error) bool {
+	logging.GetLogger().Info("Generating diff for : ", model.GetDataName())
+	diffParams := &core.DiffParams{
+		Model:       model,
+		OldData:     prevData,
+		NewData:     currData,
+		PrevVersion: prevVersion,
+		CurrVersion: prevVersion + 1,
+	}
+	ok, err := diffParams.GenerateNewDiff()
+	if err != nil {
+		logging.GetLogger().Error("error in producing diff , err : %+v", err)
+		return false
+
+	}
+	if !ok {
+		logging.GetLogger().Info("no diff to produce for : %s", model.GetDataName())
+		return false
+	}
+
+	return true
+}
+
+// loadPrevAndCurrData loads the previous and current data
+func loadPrevAndCurrData(model sources.DataModel, lastAnnouncedSnapshot string) (
+	sources.Bag, sources.Bag, bool) {
 	var wg sync.WaitGroup
 	wg.Add(1)
-
-	dataChan := make(chan result, 2)
+	dataChan := make(chan dataLoadResult, 2)
 	go loadCurrentData(model, &wg, dataChan)
-
 	if lastAnnouncedSnapshot != "" {
 		wg.Add(1)
 		snapshotStorage := storage.NewStorage(lastAnnouncedSnapshot)
@@ -60,10 +136,8 @@ func ProduceModel(model sources.DataModel) {
 	}
 	wg.Wait()
 	close(dataChan)
-
 	var currData, prevData sources.Bag
 	var currDataErr, prevDataErr error
-
 	for val := range dataChan {
 		switch val.state {
 		case currentData:
@@ -76,75 +150,20 @@ func ProduceModel(model sources.DataModel) {
 		}
 	}
 
-	logging.GetLogger().Info("producer received all data")
-
 	if currDataErr != nil {
-		logging.GetLogger().Error("error in loading the current data :, %+v", currDataErr)
-		return
-	}
-
-	currBytes, err := proto.Marshal(currData)
-	// save current snapshot
-	if err != nil {
-		logging.GetLogger().Error("error in marshalling current data, err :+v", err)
-		return
-	}
-
-	// default value
-	prevVersion := int64(-1)
-	if lastAnnouncedSnapshot == "" {
-		err = storeCurrentSnapshot(model, prevVersion, currBytes)
-		if err != nil {
-			logging.GetLogger().Error("error in saving current snapshot : %+v", err)
-		}
-		logging.GetLogger().Info("snapshot produced for the first time for : ", model.GetDataName())
-		return
+		logging.GetLogger().Error("error in loading the current data , err : %+v", currDataErr)
+		return nil, nil, false
 	}
 
 	if prevDataErr != nil {
-		logging.GetLogger().Error("error in loading the previous data , could not proceed to produce diff, err :+v", prevDataErr)
-		return
+		logging.GetLogger().Error("error in loading the previous data , err : +v", prevDataErr)
+		return currData, nil, false
 	}
-
-	prevVersion, err = snapshot.VersionImpl.ParseVersionNumber(lastAnnouncedSnapshot)
-	if err != nil {
-		logging.GetLogger().Error("error in parsing the version number from : %s, err : %+v", lastAnnouncedSnapshot, err)
-	}
-
-	// generate diff
-	logging.GetLogger().Info("Generating diff for : ", model.GetDataName())
-	diffParams := &core.DiffParams{
-		Model:       model,
-		OldData:     prevData,
-		NewData:     currData,
-		PrevVersion: prevVersion,
-		CurrVersion: prevVersion + 1,
-	}
-
-	ok, err := diffParams.GenerateNewDiff()
-	if err != nil {
-		logging.GetLogger().Error("error in producing diff , err : %+v", err)
-		return
-	}
-
-	if !ok {
-		logging.GetLogger().Info("no diff to produce for : %s", model.GetDataName())
-		return
-	}
-
-	prevVersion, err = snapshot.VersionImpl.ParseVersionNumber(lastAnnouncedSnapshot)
-	if err != nil {
-		logging.GetLogger().Error("error in parsing announced version from lastAnnounced file : %s , err : :+v", lastAnnouncedSnapshot, err)
-		return
-	}
-
-	err = storeCurrentSnapshot(model, prevVersion, currBytes)
-	if err != nil {
-		logging.GetLogger().Error("error in saving current snapshot : %+v", err)
-	}
-	return
+	return currData, prevData, true
 }
 
+// storeCurrentSnapshot saves the current data bytes
+// and updates the announced version for the data
 func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byte) error {
 	newSnapshotFileName := getNewVersionName(model, prevVersion)
 	store := storage.NewStorage(newSnapshotFileName)
@@ -155,36 +174,41 @@ func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byt
 	return snapshot.VersionImpl.UpdateVersion(model.GetDataName(), newSnapshotFileName)
 }
 
-func loadCurrentData(model sources.DataModel, wg *sync.WaitGroup, response chan result) {
+// loadCurrentData loads the current data using the model.LoadAll
+// returns the result on the dataLoadResult channel
+func loadCurrentData(model sources.DataModel, wg *sync.WaitGroup,
+	response chan dataLoadResult) {
 	defer wg.Done()
 	defer util.Duration(time.Now(), "loadCurrentData")
 
 	bytes, err := model.LoadAll()
 	if err != nil {
-		response <- result{
+		response <- dataLoadResult{
 			state: currentData,
 			data:  nil,
 			err:   err,
 		}
 	}
 
-	response <- result{
+	response <- dataLoadResult{
 		state: currentData,
 		data:  bytes,
 		err:   nil,
 	}
 }
 
+// loadPreviousData loads the previous data from the storage
+// returns the result on the dataLoadResult channel
 func loadPreviousData(storage storage.Storage, model sources.DataModel,
-	wg *sync.WaitGroup, response chan result) {
+	wg *sync.WaitGroup, response chan dataLoadResult) {
 	defer wg.Done()
 	defer util.Duration(time.Now(), "loadPreviousData")
 	prevBytes, err := storage.Read()
 	if err != nil {
-		response <- result{
+		response <- dataLoadResult{
 			state: previousData,
 			data:  nil,
-			err:   errors.New(fmt.Sprintf("Error in reading previous data : %+v", err)),
+			err:   fmt.Errorf("error in reading previous data : %+v", err),
 		}
 	}
 
@@ -192,20 +216,21 @@ func loadPreviousData(storage storage.Storage, model sources.DataModel,
 	err = proto.Unmarshal(prevBytes, prevData)
 
 	if err != nil {
-		response <- result{
+		response <- dataLoadResult{
 			state: previousData,
 			data:  nil,
 			err:   err,
 		}
 	}
 
-	response <- result{
+	response <- dataLoadResult{
 		state: previousData,
 		data:  prevData,
 		err:   err,
 	}
 }
 
+// getNewVersionName returns the newVersion number given the model and prevVersion
 func getNewVersionName(model sources.DataModel, prevVersion int64) string {
 	if prevVersion == -1 {
 		return fmt.Sprintf("%s-%d", model.GetDataName(), core.DefaultVersionNumber)

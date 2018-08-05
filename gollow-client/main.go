@@ -23,7 +23,7 @@ func main() {
 func Init(ctx context.Context) {
 	//init everything here...
 	snapshot.InitVersionStorage(config.GlobalConfig.Storage.AnnouncedVersion)
-	cache.UpdateSnapshots(ctx)
+	cache.RefreshCaches(ctx)
 }
 
 func RegisterDataModels() {

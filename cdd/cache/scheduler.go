@@ -10,11 +10,16 @@ import (
 
 var wg sync.WaitGroup
 
-func UpdateSnapshots(ctx context.Context) {
+// RefreshCaches launches go routines to refresh the caches
+// checks at the cache duration interval to fetch the snapshots
+// returns after the cache has been loaded for the first time
+// server should be started after RefreshCache has returned.
+// should only be called one time
+func RefreshCaches(ctx context.Context) {
 	models := GetRegisteredModels()
 	for model, cache := range models {
 		wg.Add(1)
-		go InitSnapshot(ctx, model, cache)
+		go InitCache(ctx, model, cache)
 		ticker := time.NewTicker(time.Duration(model.CacheDuration()))
 		quit := make(chan struct{})
 		go func() {
@@ -35,7 +40,8 @@ func UpdateSnapshots(ctx context.Context) {
 	wg.Wait()
 }
 
-func InitSnapshot(ctx context.Context, model sources.DataModel, cache GollowCache) {
+// InitCache initialises the cache for the first time
+func InitCache(ctx context.Context, model sources.DataModel, cache GollowCache) {
 	defer wg.Done()
 	FetchSnapshot(ctx, model, cache)
 }

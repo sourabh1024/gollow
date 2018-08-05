@@ -13,6 +13,8 @@ type snapshotVersion struct {
 	snapshotsVersions map[string]string
 }
 
+// GetSnapshotVersion returns a singleton object of SnapshotVersion of Cache
+// all the go routines should access the same map , hence singleton
 func GetSnapshotVersion() *snapshotVersion {
 	versionOnce.Do(func() {
 		version = &snapshotVersion{

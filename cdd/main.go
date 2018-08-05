@@ -16,9 +16,12 @@ func main() {
 	//initialise all you want
 	Init(context.Background())
 	//initialise server
-	server.ServerInit()
+	server.Init()
 }
 
+// Init initialises everything here
+// should initialise which storage to use
+// schedule the producers
 func Init(ctx context.Context) {
 
 	//initialise everything here
@@ -28,6 +31,7 @@ func Init(ctx context.Context) {
 	go producer.ScheduleProducers()
 }
 
+// RegisterDataModel registers the data model for production
 func RegisterDataModel() {
 	producer.Register(&dummy.DummyData{}, struct{}{})
 }

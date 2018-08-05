@@ -8,6 +8,7 @@ func init() {
 	log = logging.MustGetLogger("gollow")
 }
 
+// GetLogger returns the logger
 func GetLogger() *logging.Logger {
 	return log
 }

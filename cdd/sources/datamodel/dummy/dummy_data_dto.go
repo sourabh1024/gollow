@@ -12,14 +12,15 @@ import (
 	"time"
 )
 
-//var _ sources.DataModel = &DummyDataDTO{}
-var _ data.Entity = &DummyDataDTO{}
+//var _ sources.DataModel = &DataDTO{}
+var _ data.Entity = &DataDTO{}
 
-//DummyDataRef is the reference object for DummyData Data
-var DummyDataRef = &DummyDataDTO{}
+// DummyDataRef is the reference object for DummyData Data
+var DummyDataRef = &DataDTO{}
 
-//DummyData is the DataModelName being loaded
-type DummyDataDTO struct {
+// DataDTO is the struct required by DTO to load the message from data source
+// it can vary depending on the data source , should be defined by user
+type DataDTO struct {
 	ID        int64     `sql-col:"id" sql-key:"id" sql-insert:"false" primary-key:"true" json:"id"`
 	PID       int64     `sql-col:"pid" json:"pid"`
 	FirstName string    `sql-col:"first_name" json:"firstname"`
@@ -32,7 +33,10 @@ type DummyDataDTO struct {
 	CreatedAt time.Time `sql-col:"created_at" json:"created_at"`
 }
 
-func (d DummyDataDTO) ToPB() sources.Message {
+// ToPB implements the DTO interface
+// ToPB converts the DTO object to protoBuf Message type
+// required for data production
+func (d DataDTO) ToPB() sources.Message {
 
 	return &DummyData{
 		ID:         d.ID,
@@ -49,22 +53,22 @@ func (d DummyDataDTO) ToPB() sources.Message {
 }
 
 // NewEntity implements the data.Entity interface.
-func (d *DummyDataDTO) NewEntity() data.Entity {
-	return &DummyDataDTO{}
+func (d *DataDTO) NewEntity() data.Entity {
+	return &DataDTO{}
 }
 
 //GetPrimaryKey implements the data.Entity interface
-func (d *DummyDataDTO) GetPrimaryKey() string {
+func (d *DataDTO) GetPrimaryKey() string {
 	return strconv.FormatInt(d.ID, 10)
 }
 
 //GetDataName implements the DataModel interface
-func (d *DummyDataDTO) GetDataName() string {
+func (d *DataDTO) GetDataName() string {
 	return "dummy_data"
 }
 
 //LoadAll implements the DataModel interface
-func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
+func (d *DataDTO) LoadAll() (sources.Bag, error) {
 
 	defer util.Duration(time.Now(), "DummyDataDataFetchFromSQL")
 	logging.GetLogger().Info("Starting loading of data for %s", d.GetDataName())
@@ -72,7 +76,7 @@ func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 	var result = &DummyDataBag{}
 
 	query := "SELECT * FROM dummy_data"
-	entities, err := data.NewMySQLConnectionRef().NativeQueryRows(context.Background(), config.GlobalConfig.MySQLConfig, query, &DummyDataDTO{})
+	entities, err := data.NewMySQLConnectionRef().QueryRows(context.Background(), config.GlobalConfig.MySQLConfig, query, &DataDTO{})
 
 	if err != nil {
 		logging.GetLogger().Error("Error in fetching data from DB : ", err)
@@ -84,7 +88,7 @@ func (d *DummyDataDTO) LoadAll() (sources.Bag, error) {
 	lenResult := len(entities)
 
 	for i := 0; i < lenResult; i++ {
-		entity, ok := entities[i].(*DummyDataDTO)
+		entity, ok := entities[i].(*DataDTO)
 
 		if !ok {
 			logging.GetLogger().Error("Error in typecasting the results , err: %+v", err)

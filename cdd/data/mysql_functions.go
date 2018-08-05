@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // mysql driver package
 	"golang.org/x/net/context"
 	"gollow/cdd/logging"
 	"reflect"
@@ -98,20 +98,22 @@ var createDBConn = func(config *MysqlConfig) (db *sql.DB, err error) {
 	return
 }
 
-type mySqlConnection interface {
+type mySQLConnection interface {
 
-	// query rows native
-	NativeQueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, field ...interface{}) ([]interface{}, error)
+	// query rows
+	QueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, field ...interface{}) ([]interface{}, error)
 }
 
-type mySqlConnectionImpl struct {
+type mySQLConnectionImpl struct {
 }
 
-func NewMySQLConnectionRef() *mySqlConnectionImpl {
-	return &mySqlConnectionImpl{}
+// NewMySQLConnectionRef returns the mysql connection impl
+func NewMySQLConnectionRef() *mySQLConnectionImpl {
+	return &mySQLConnectionImpl{}
 }
 
-func (mySqlConnection *mySqlConnectionImpl) NativeQueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, args ...interface{}) ([]interface{}, error) {
+// QueryRows queries the row with passed params
+func (mySqlConnection *mySQLConnectionImpl) QueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, args ...interface{}) ([]interface{}, error) {
 
 	pendingRequests := atomic.AddInt64(&config.PendingCalls, 1)
 	defer atomic.AddInt64(&config.PendingCalls, -1)
@@ -171,33 +173,6 @@ func (mySqlConnection *mySqlConnectionImpl) NativeQueryRows(ctx context.Context,
 
 		output = append(output, result)
 	}
-
-	//columns, _ := rows.Columns()
-	//count := len(columns)
-	//
-	//var v struct {
-	//	Data []interface{} // `json:"data"`
-	//}
-	//
-	//for rows.Next() {
-	//	values := make([]interface{}, count)
-	//	valuePtrs := make([]interface{}, count)
-	//	for i, _ := range columns {
-	//		valuePtrs[i] = &values[i]
-	//	}
-	//	if err := rows.Scan(valuePtrs...); err != nil {
-	//		log.Fatal(err)
-	//	}
-	//
-	//	//Created a map to handle the issue
-	//	var m map[string]interface{}
-	//	m = make(map[string]interface{})
-	//	for i := range columns {
-	//		m[columns[i]] = values[i]
-	//	}
-	//	v.Data = append(v.Data, m)
-	//}
-	//jsonMsg, err := json.Marshal(v)
 
 	if len(output) == 0 {
 		return nil, ErrNoData

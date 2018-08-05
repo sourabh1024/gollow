@@ -12,10 +12,6 @@ import (
 	"time"
 )
 
-var (
-	DiffObjectDao = &DiffObject{}
-)
-
 //GenerateDiff interface to generate and save the diff
 type GenerateDiff interface {
 
@@ -59,7 +55,8 @@ func (params *DiffParams) GetDiffName() string {
 		strconv.FormatInt(params.CurrVersion, 10)
 }
 
-//GenerateNewDiff implements the GenerateDiff interface
+// GenerateNewDiff implements the GenerateDiff interface
+// returns whether the diff was produced or not and error
 func (params *DiffParams) GenerateNewDiff() (bool, error) {
 	defer util.Duration(time.Now(), "CreateNewDiff")
 	diff := getDiffBetweenModels(params.OldData, params.NewData, params.Model)
@@ -74,7 +71,7 @@ func (params *DiffParams) GenerateNewDiff() (bool, error) {
 	return true, nil
 }
 
-//LoadDiff loads the given diff name and returns the diffObject using the NewStorage
+// LoadDiff loads the given diff name and returns the diffObject using the NewStorage
 func (params *DiffParams) LoadDiff(diffName string) (*DiffObject, error) {
 	store := storage.NewStorage(diffName)
 	data, err := store.Read()
@@ -102,7 +99,7 @@ func saveDiff(params *DiffParams, diff *DiffObject) error {
 	return nil
 }
 
-//getDiffBetweenModels finds the diff between old and new data
+// getDiffBetweenModels finds the diff between old and new data
 func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model sources.DataModel) *DiffObject {
 
 	defer util.Duration(time.Now(), fmt.Sprintf("GetDiffBetweenModels for : %s", model.GetDataName()))
@@ -130,7 +127,7 @@ func getDiffBetweenModels(oldData sources.Bag, newData sources.Bag, model source
 	return diff
 }
 
-//findNewOrChangedKeys finds the object which are new or whose any value have been changed
+// findNewOrChangedKeys finds the object which are new or whose any value have been changed
 func (d *DiffObject) findNewOrChangedKeys(oldDataMap, newDataMap map[string]sources.Message, model sources.DataModel) {
 
 	d.NewObjects = model.NewBag()
@@ -153,10 +150,10 @@ func (d *DiffObject) findNewOrChangedKeys(oldDataMap, newDataMap map[string]sour
 	}
 }
 
-//findMissingKeys finds the missing keys from the newData map compared to oldData map
+// findMissingKeys finds the missing keys from the newData map compared to oldData map
 func (d *DiffObject) findMissingKeys(oldDataMap, newDataMap map[string]sources.Message) {
-	missingKeys := make([]string, 0)
-	for key, _ := range oldDataMap {
+	var missingKeys []string
+	for key := range oldDataMap {
 		//key is missing from newDataMap means key has been deleted
 		if _, ok := newDataMap[key]; !ok {
 			missingKeys = append(missingKeys, key)
@@ -165,7 +162,7 @@ func (d *DiffObject) findMissingKeys(oldDataMap, newDataMap map[string]sources.M
 	d.MissingKeys = missingKeys
 }
 
-//getDataMaps returns the map for old and new Data
+// getDataMaps returns the map for old and new Data
 func getDataMaps(oldSource, newSource sources.Bag) (oldMap, newMap map[string]sources.Message) {
 	oldMap = make(map[string]sources.Message, len(oldSource.GetEntries()))
 	newMap = make(map[string]sources.Message, len(newSource.GetEntries()))
@@ -185,6 +182,7 @@ func getDataMaps(oldSource, newSource sources.Bag) (oldMap, newMap map[string]so
 	return oldMap, newMap
 }
 
+// getMapFromDataModel converts bag into map of primaryId -> object
 func getMapFromDataModel(d sources.Bag, result map[string]sources.Message) {
 
 	defer util.Duration(time.Now(), fmt.Sprintf("getMapFromDataModel for len : %d", len(d.GetEntries())))
@@ -197,6 +195,10 @@ func getMapFromDataModel(d sources.Bag, result map[string]sources.Message) {
 	}
 }
 
+// shouldDiffBeProduced checks whether the diff should be produced or not
+// in future should it be exported to model level decision ?
+// checks if the diff object is nil or,
+// checks if there is no data to be produced in new, changed or missing objects
 func shouldDiffBeProduced(diff *DiffObject) bool {
 	if diff == nil || (len(diff.ChangedObjects.GetEntries()) == 0 &&
 		len(diff.NewObjects.GetEntries()) == 0 &&
@@ -206,6 +208,7 @@ func shouldDiffBeProduced(diff *DiffObject) bool {
 	return true
 }
 
-func marshalDiff(delta *DiffObject) ([]byte, error) {
-	return json.Marshal(delta)
+// marshalDiff marshals the diff
+func marshalDiff(diff *DiffObject) ([]byte, error) {
+	return json.Marshal(diff)
 }

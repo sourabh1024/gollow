@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"fmt"
 	"golang.org/x/net/context"
 	"gollow/cdd/core"
@@ -13,10 +12,9 @@ import (
 	"time"
 )
 
-var (
-	ErrTypeCasting = errors.New("error in typecasting the interface")
-)
-
+// FetchSnapshot fetches the current snapshot for the given model into given cache
+// if the currentCacheVersion for DataModel is empty, it loads the whole data
+// if the currentCacheVersion doesn't matches the announcedVersion it loads all the diffs
 func FetchSnapshot(ctx context.Context, model sources.DataModel, cache GollowCache) {
 
 	defer util.Duration(time.Now(),
@@ -119,7 +117,7 @@ func getDiffVersions(version1, version2 string, model sources.DataModel) []strin
 	v1, _ := snapshot.VersionImpl.ParseVersionNumber(version1)
 	v2, _ := snapshot.VersionImpl.ParseVersionNumber(version2)
 
-	diffs := make([]string, 0)
+	var diffs []string
 	for i := v1; i < v2; i++ {
 		params := &core.DiffParams{
 			Model:       model,

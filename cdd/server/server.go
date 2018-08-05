@@ -64,8 +64,8 @@ func startRestServer(address, grpcAddress string) error {
 	return nil
 }
 
-// main start a gRPC server and waits for connection
-func ServerInit() {
+// Init start a gRPC server and waits for connection
+func Init() {
 
 	logging.GetLogger().Info("Starting server...")
 

@@ -23,7 +23,7 @@ func Register(model sources.DataModel, cache GollowCache) {
 	models.modelsList[model] = cache
 }
 
-//GetRegisteredModels() returns you the map of RegisteredModels to cache
+//GetRegisteredModels returns you the map of RegisteredModels to cache
 //which are populated with this model data
 func GetRegisteredModels() map[sources.DataModel]GollowCache {
 	return models.modelsList

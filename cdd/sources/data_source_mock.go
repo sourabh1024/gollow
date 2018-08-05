@@ -2,6 +2,7 @@ package sources
 
 import "github.com/stretchr/testify/mock"
 
+//MockDataModel mocks the DataModel implementation
 type MockDataModel struct {
 	mock.Mock
 }
