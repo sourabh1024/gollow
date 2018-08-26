@@ -1,6 +1,8 @@
-hash: 61b166f78f1ae33ee63601818f835d6ab6b3a58ce6949ecbba1ee6650afa9d20
-updated: 2018-07-23T19:27:14.354699+08:00
+hash: 5519c737e211067a9d21a2510ffe3f3c7530aec2ff366c6f1df756d7b63cd108
+updated: 2018-08-26T18:40:04.217874+08:00
 imports:
+- name: github.com/aws/aws-sdk-go
+  version: 4324bc9d8865bdb3e6aa86ec7772ca1272d2750e
 - name: github.com/christophberger/grada
   version: 5b073dc6bb9952bad0284bccfbe38ed447a40e75
 - name: github.com/davecgh/go-spew
@@ -33,14 +35,14 @@ imports:
   subpackages:
   - difflib
 - name: github.com/stretchr/objx
-  version: b8b73a35e9830ae509858c10dec5866b4d5c8bff
+  version: ef50b0de28773081167c97fc27cf29a0bf8b8c71
 - name: github.com/stretchr/testify
   version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
   - assert
   - mock
 - name: golang.org/x/net
-  version: a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1
+  version: 8a410e7b638dca158bf9e766925842f6651ff828
   subpackages:
   - context
   - http/httpguts
@@ -50,22 +52,22 @@ imports:
   - internal/timeseries
   - trace
 - name: golang.org/x/text
-  version: 0605a8320aceb4207a5fb3521281e17ec2075476
+  version: 6e3c4e7365ddcc329f090f96e4348398f6310088
   subpackages:
   - secure/bidirule
   - transform
   - unicode/bidi
   - unicode/norm
 - name: golang.org/x/tools
-  version: 60ffea201e66e0d9375dc5bec85245d7b416710f
+  version: f6ba5742950514ddd66494151ed5498ed77969ca
   subpackages:
   - cmd/cover
 - name: google.golang.org/appengine
-  version: b1f26356af11148e710935ed1ac8a7f5702c7612
+  version: 4216e58b9158e5f1c906f1aca75162a46a2ec88a
   subpackages:
   - cloudsql
 - name: google.golang.org/genproto
-  version: 02b4e95473316948020af0b7a4f0f22c73929b0e
+  version: c66870c02cf823ceb633bcd05be3c7cda29976f4
   subpackages:
   - googleapis/api/annotations
   - googleapis/client_api/annotations

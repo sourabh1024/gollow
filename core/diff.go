@@ -75,7 +75,10 @@ func (params *DiffParams) GenerateNewDiff() (bool, error) {
 
 // LoadDiff loads the given diff name and returns the diffObject using the NewStorage
 func (params *DiffParams) LoadDiff(diffName string) (*DiffObject, error) {
-	store := storage.NewStorage(diffName)
+	store, err := storage.NewStorage(diffName)
+	if err != nil {
+		return nil, err //couldn't get storage
+	}
 	data, err := store.Read()
 	if err != nil {
 		return nil, err
@@ -89,7 +92,10 @@ func (params *DiffParams) LoadDiff(diffName string) (*DiffObject, error) {
 
 //saveDiff saves the diff object
 func saveDiff(params *DiffParams, diff *DiffObject) error {
-	store := storage.NewStorage(params.GetDiffName())
+	store, err := storage.NewStorage(params.GetDiffName())
+	if err != nil {
+		return err // couldn't get storage
+	}
 	diffBytes, err := marshalDiff(diff)
 	if err != nil {
 		return err

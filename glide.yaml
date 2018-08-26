@@ -33,3 +33,5 @@ import:
   subpackages:
   - cmd/cover
 - package: github.com/christophberger/grada
+- package: github.com/aws/aws-sdk-go
+  version: v1.15.21

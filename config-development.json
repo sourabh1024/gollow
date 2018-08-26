@@ -7,6 +7,8 @@
   "storage":{
     "storageType" : "file",
     "announcedVersion" : "announced.version",
-    "baseSnapshotPath" : "/Users/sourabh.suman/gopath/src/gollow/snapshots/"
+    "baseSnapshotPath" : "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
+    "awsRegion": "ap-southeast-1",
+    "bucket":"demo-gollow"
   }
 }

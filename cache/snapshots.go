@@ -72,7 +72,13 @@ func applyAllDiffs(diffs []string, source sources.DataModel, cache GollowCache) 
 }
 
 func loadCompleteSnapshot(announcedVersion string, model sources.DataModel, cache GollowCache) {
-	snapshotImpl := snapshot.NewSnapshot(storage.NewStorage(announcedVersion))
+	store, err := storage.NewStorage(announcedVersion)
+	if err != nil {
+		logging.GetLogger().Error("error in getting  announced snapshot storage , err :+v", err)
+		return
+	}
+	snapshotImpl := snapshot.NewSnapshot(store)
+
 	bag, err := snapshotImpl.Load(model)
 
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"gollow/config"
 	"gollow/core/snapshot"
 	"gollow/core/storage"
+	"gollow/logging"
 	"gollow/producer"
 	"gollow/server"
 	"gollow/sources/datamodel/dummy"
@@ -25,7 +26,12 @@ func main() {
 func Init(ctx context.Context) {
 
 	//initialise everything here
-	snapshotStorage := storage.NewStorage(config.GlobalConfig.Storage.AnnouncedVersion)
+	snapshotStorage, err := storage.NewStorage(config.GlobalConfig.Storage.AnnouncedVersion)
+
+	if err != nil {
+		logging.GetLogger().Error("error in getting new snapshot storage with err : %v", err)
+		panic(err)
+	}
 	snapshot.Init(snapshotStorage)
 
 	go producer.ScheduleProducers()

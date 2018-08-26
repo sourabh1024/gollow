@@ -1,6 +1,9 @@
 package snapshot
 
-import "gollow/core/storage"
+import (
+	"fmt"
+	"gollow/core/storage"
+)
 
 //Version represents the version information for all the keys
 type Version interface {
@@ -21,6 +24,9 @@ func InitVersionStorage(announcedVersion string) {
 	if announcedVersion == "" {
 		panic("Cannot initialise Storage with nil config")
 	}
-	versionStorage := storage.NewStorage(announcedVersion)
+	versionStorage, err := storage.NewStorage(announcedVersion)
+	if err != nil {
+		panic(fmt.Errorf("cannot initialise storage err %v", err))
+	}
 	Init(versionStorage)
 }

@@ -132,8 +132,17 @@ func loadPrevAndCurrData(model sources.DataModel, lastAnnouncedSnapshot string) 
 	go loadCurrentData(model, &wg, dataChan)
 	if lastAnnouncedSnapshot != "" {
 		wg.Add(1)
-		snapshotStorage := storage.NewStorage(lastAnnouncedSnapshot)
-		go loadPreviousData(snapshotStorage, model, &wg, dataChan)
+		snapshotStorage, err := storage.NewStorage(lastAnnouncedSnapshot)
+		if err != nil {
+			// error loading previous data
+			dataChan <- dataLoadResult{
+				state: previousData,
+				data:  nil,
+				err:   fmt.Errorf("error in reading previous data : %+v", err),
+			}
+		} else {
+			go loadPreviousData(snapshotStorage, model, &wg, dataChan)
+		}
 	}
 	wg.Wait()
 	close(dataChan)
@@ -167,8 +176,11 @@ func loadPrevAndCurrData(model sources.DataModel, lastAnnouncedSnapshot string) 
 // and updates the announced version for the data
 func storeCurrentSnapshot(model sources.DataModel, prevVersion int64, data []byte) error {
 	newSnapshotFileName := getNewVersionName(model, prevVersion)
-	store := storage.NewStorage(newSnapshotFileName)
-	_, err := store.Write(data)
+	store, err := storage.NewStorage(newSnapshotFileName)
+	if err != nil {
+		return err
+	}
+	_, err = store.Write(data)
 	if err != nil {
 		return err
 	}

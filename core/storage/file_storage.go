@@ -13,11 +13,11 @@ type FileStorage struct {
 }
 
 // NewFileStorage returns a new file storage with fullPath
-func NewFileStorage(fileName string) *FileStorage {
+func NewFileStorage(fileName string) (*FileStorage, error) {
 	return &FileStorage{
 		fullPath: config.GlobalConfig.Storage.BaseSnapshotPath + fileName,
 		fileName: fileName,
-	}
+	}, nil
 }
 
 // IsExist implements storage interface

@@ -46,6 +46,9 @@ type StorageConfig struct {
 	// BaseSnapshotPath should have the path of the folder where snapshots should be saved
 	// this is used by fileStorage system
 	BaseSnapshotPath string `json:"baseSnapshotPath"`
+
+	AWSRegion string `json:"awsRegion"`
+	S3Bucket  string `json:"bucket"`
 }
 
 func init() {
