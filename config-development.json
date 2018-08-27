@@ -5,7 +5,7 @@
     "maxOpen":10
   },
   "storage":{
-    "storageType" : "file",
+    "storageType" : "s3",
     "announcedVersion" : "announced.version",
     "baseSnapshotPath" : "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
     "awsRegion": "ap-southeast-1",

@@ -21,7 +21,7 @@ type s3API interface {
 	PutObjectRequest(*s3.PutObjectInput) (*request.Request, *s3.PutObjectOutput)
 }
 
-// client is the wrapper for the aws s3 client and conforms to the grabs3 interface
+// client is the wrapper for the aws s3 client
 type S3Storage struct {
 	client s3API
 	bucket string

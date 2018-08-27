@@ -28,5 +28,17 @@ func InitVersionStorage(announcedVersion string) {
 	if err != nil {
 		panic(fmt.Errorf("cannot initialise storage err %v", err))
 	}
+
 	Init(versionStorage)
+
+	// if versionStorage doesn't exist create one
+	if !versionStorage.IsExist() {
+		versionMap := make(map[string]string, 0)
+		versionMap["version"] = "1.0.0"
+		err := writeAnnouncedVersion(versionMap)
+		if err != nil {
+			panic("version map cannot be initialised")
+		}
+	}
+
 }
