@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package client_api;
+
+import "google/api/annotations.proto";
+
+service Ping {
+	rpc SayHello(PingMessage) returns (PingMessage) {
+		option (google.api.http) = {
+			post: "/1/ping"
+			body: "*"
+		};
+	}
+
+	rpc GetDummyData(DummyDataRequest) returns (DummyDataResponse) {
+		option (google.api.http)  = {
+			get :"/getDummyData"
+		};
+	}
+}
+
+message PingMessage {
+	string greeting = 1;
+}
+
+message DummyDataRequest {
+	string keyname = 1;
+}
+
+message DummyDataResponse {
+	int64 id = 1;
+	string firstname = 2;
+	double balance = 3;
+}
+

@@ -104,6 +104,8 @@ type mySQLConnection interface {
 
 	// query rows
 	QueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, field ...interface{}) ([]interface{}, error)
+
+	InsertRows(ctx context.Context, config *MysqlConfig, query []string, field ...interface{}) error
 }
 
 type mySQLConnectionImpl struct {
@@ -179,6 +181,28 @@ func (mySqlConnection *mySQLConnectionImpl) QueryRows(ctx context.Context, confi
 		return nil, ErrNoData
 	}
 	return output, nil
+}
+
+func (mySQLConnection *mySQLConnectionImpl) InsertRow(ctx context.Context, config *MysqlConfig, query string, args []interface{}) error {
+
+	pendingRequests := atomic.AddInt64(&config.PendingCalls, 1)
+	defer atomic.AddInt64(&config.PendingCalls, -1)
+	logging.GetLogger().Info("Number of pending sql requests : %d", pendingRequests)
+
+	db, err := getDatabase(config)
+
+	if err != nil {
+		return err
+	}
+
+	logging.GetLogger().Info("query : %s", query)
+
+	// prepare the query
+	stmt, _ := db.Prepare(query)
+
+	_, err = stmt.Exec(args...)
+
+	return err
 }
 
 var buildColumnsInfo = func(typ reflect.Type) *columnsInfo {

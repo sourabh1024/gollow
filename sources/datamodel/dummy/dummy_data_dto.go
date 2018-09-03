@@ -43,7 +43,7 @@ type DataDTO struct {
 	MaxCredit float64   `sql-col:"max_credit" json:"max_credit"`
 	MaxDebit  float64   `sql-col:"max_debit" json:"max_debit"`
 	Score     float64   `sql-col:"score" json:"score"`
-	IsActive  bool      `sql-col:"is_shown" json:"is_shown"`
+	IsActive  bool      `sql-col:"is_active" json:"is_shown"`
 	CreatedAt time.Time `sql-col:"created_at" json:"created_at"`
 }
 

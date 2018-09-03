@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
+	"gollow/config"
 	"gollow/logging"
 	"gollow/server/api"
 	"google.golang.org/grpc"
@@ -83,8 +84,8 @@ func Init() {
 
 	logging.GetLogger().Info("Starting server...")
 
-	restAddress := fmt.Sprintf("%s:%d", "localhost", 7778)
-	grpcAddress := fmt.Sprintf("%s:%d", "localhost", 7777)
+	restAddress := fmt.Sprintf("%s:%d", "localhost", config.GlobalConfig.ProducerRPCPort)
+	grpcAddress := fmt.Sprintf("%s:%d", "localhost", config.GlobalConfig.ProducerHttpPort)
 
 	go func() {
 		err := startGRPCServer(grpcAddress)

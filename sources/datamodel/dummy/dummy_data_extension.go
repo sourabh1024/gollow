@@ -27,7 +27,7 @@ func (message DummyData) LoadAll() (sources.Bag, error) {
 // CacheDuration implements the DataModel interface
 // CacheDuration returns the cache duration for the given data model
 func (message DummyData) CacheDuration() int64 {
-	return int64(time.Duration(1 * time.Minute))
+	return int64(time.Duration(2 * time.Minute))
 }
 
 // GetDataName implements the DataModel interface

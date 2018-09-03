@@ -43,6 +43,10 @@ type Config struct {
 
 	// Storage configs for storage
 	Storage *StorageConfig `json:"storage"`
+
+	ProducerRPCPort int `json:"producerRpcPort"`
+
+	ProducerHttpPort int `json:"producerHttpPort"`
 }
 
 // StorageConfig is the config params for Storage Stuff
