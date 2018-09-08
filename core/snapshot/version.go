@@ -16,7 +16,7 @@ package snapshot
 
 import (
 	"fmt"
-	"gollow/core/storage"
+	"github.com/gollow/core/storage"
 )
 
 //Version represents the version information for all the keys

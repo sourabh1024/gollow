@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	"gollow/gollow-demo/client_api"
-	"gollow/gollow-demo/config"
-	"gollow/logging"
+	"github.com/gollow/gollow-demo/client_api"
+	"github.com/gollow/gollow-demo/config"
+	"github.com/gollow/logging"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"

@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gollow/data"
-	"gollow/logging"
+	"github.com/gollow/data"
+	"github.com/gollow/logging"
 	"io/ioutil"
 	"os"
 )

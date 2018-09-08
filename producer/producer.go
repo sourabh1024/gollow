@@ -17,14 +17,16 @@ package producer
 
 import (
 	"fmt"
+
 	"github.com/golang/protobuf/proto"
-	"gollow/core"
-	"gollow/core/snapshot"
-	"gollow/core/storage"
-	"gollow/data"
-	"gollow/logging"
-	"gollow/sources"
-	"gollow/util"
+	"github.com/gollow/core"
+	"github.com/gollow/core/snapshot"
+	"github.com/gollow/core/storage"
+	"github.com/gollow/data"
+	"github.com/gollow/logging"
+	"github.com/gollow/sources"
+	"github.com/gollow/util"
+
 	"sync"
 	"time"
 )

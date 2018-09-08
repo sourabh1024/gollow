@@ -15,7 +15,7 @@
 package cache
 
 import (
-	"gollow/sources"
+	"github.com/gollow/sources"
 )
 
 var (

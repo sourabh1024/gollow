@@ -16,9 +16,9 @@ package client_api
 
 import (
 	"context"
-	"gollow/gollow-demo/cache/client_datamodel"
-	"gollow/logging"
-	"gollow/sources/datamodel/dummy"
+	"github.com/gollow/gollow-demo/cache/client_datamodel"
+	"github.com/gollow/logging"
+	"github.com/gollow/sources/datamodel/dummy"
 )
 
 // Server represents the gRPC server

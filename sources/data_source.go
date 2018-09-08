@@ -16,7 +16,7 @@ package sources
 
 import (
 	"github.com/golang/protobuf/proto"
-	"gollow/data"
+	"github.com/gollow/data"
 )
 
 //Message represents a single entity of the data

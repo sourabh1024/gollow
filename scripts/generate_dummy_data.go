@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"gollow/config"
-	"gollow/data"
-	"gollow/logging"
-	"gollow/sources/datamodel/dummy"
+	"github.com/gollow/config"
+	"github.com/gollow/data"
+	"github.com/gollow/logging"
+	"github.com/gollow/sources/datamodel/dummy"
 	"strings"
 )
 

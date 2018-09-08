@@ -15,7 +15,8 @@
 package producer
 
 import (
-	"gollow/logging"
+	"github.com/gollow/logging"
+
 	"time"
 )
 

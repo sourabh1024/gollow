@@ -18,13 +18,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gollow/logging"
+	"github.com/gollow/logging"
 	"io/ioutil"
 	"os"
 )
 
 const (
-	ENV_VAR = "GOLLOW_CF"
+	ENV_VAR = "GOLLOW_DEMO_CF"
 )
 
 var (

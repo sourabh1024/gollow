@@ -16,8 +16,8 @@ package cache
 
 import (
 	"golang.org/x/net/context"
-	"gollow/logging"
-	"gollow/sources"
+	"github.com/gollow/logging"
+	"github.com/gollow/sources"
 	"sync"
 	"time"
 )

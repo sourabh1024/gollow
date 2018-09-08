@@ -16,11 +16,11 @@ package main
 
 import (
 	"context"
-	"gollow/config"
-	"gollow/core/snapshot"
-	"gollow/producer"
-	"gollow/server"
-	"gollow/sources/datamodel/dummy"
+	"github.com/gollow/server"
+	"github.com/gollow/core/snapshot"
+	"github.com/gollow/config"
+	"github.com/gollow/producer"
+	"github.com/gollow/sources/datamodel/dummy"
 )
 
 func main() {

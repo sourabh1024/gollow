@@ -15,7 +15,7 @@
 package storage
 
 import (
-	"gollow/config"
+	"github.com/gollow/config"
 	"io/ioutil"
 	"os"
 )

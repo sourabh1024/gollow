@@ -7,10 +7,10 @@
   "storage":{
     "storageType" : "file",
     "announcedVersion" : "announced.version",
-    "baseSnapshotPath" : "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
+    "baseSnapshotPath" : "/tmp/",
     "awsRegion": "ap-southeast-1",
     "bucket":"demo-gollow"
   },
   "producerRpcPort": 7777,
-  "producerHttpPort": 7778,
+  "producerHttpPort": 7778
 }

@@ -20,7 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"gollow/logging"
+	"github.com/gollow/logging"
 	"io/ioutil"
 )
 

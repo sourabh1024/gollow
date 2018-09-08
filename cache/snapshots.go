@@ -17,12 +17,12 @@ package cache
 import (
 	"fmt"
 	"golang.org/x/net/context"
-	"gollow/core"
-	"gollow/core/snapshot"
-	"gollow/core/storage"
-	"gollow/logging"
-	"gollow/sources"
-	"gollow/util"
+	"github.com/gollow/core"
+	"github.com/gollow/core/snapshot"
+	"github.com/gollow/core/storage"
+	"github.com/gollow/logging"
+	"github.com/gollow/sources"
+	"github.com/gollow/util"
 	"time"
 )
 

@@ -15,8 +15,8 @@
 package client_datamodel
 
 import (
-	"gollow/data"
-	"gollow/sources"
+	"github.com/gollow/data"
+	"github.com/gollow/sources"
 	"sync"
 )
 

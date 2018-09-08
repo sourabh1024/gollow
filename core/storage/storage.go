@@ -16,7 +16,7 @@
 package storage
 
 import (
-	"gollow/config"
+	"github.com/gollow/config"
 )
 
 //Storage interface provides all methods required for read/write/checkExistence

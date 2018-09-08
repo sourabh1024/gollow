@@ -5,10 +5,12 @@
     "maxOpen":10
   },
   "storage":{
-    "storageType" : "s3",
+    "storageType" : "file",
     "announcedVersion" : "announced.version",
-    "baseSnapshotPath" : "/Users/sourabh.suman/gopath/src/gollow/snapshots/",
+    "baseSnapshotPath" : "/tmp/",
     "awsRegion": "ap-southeast-1",
     "bucket":"demo-gollow"
-  }
+  },
+  "serverRpcPort": 2223,
+  "serverHttpPort": 2224
 }

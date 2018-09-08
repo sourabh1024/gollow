@@ -1,7 +1,7 @@
 package dummy
 
 import (
-	"gollow/sources"
+	"github.com/gollow/sources"
 	"strconv"
 	"time"
 )

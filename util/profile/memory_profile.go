@@ -15,8 +15,8 @@
 package profile
 
 import (
-	"gollow/logging"
 	"runtime"
+	"github.com/gollow/logging"
 )
 
 func GetMemoryProfile() {

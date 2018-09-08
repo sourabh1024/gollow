@@ -23,9 +23,9 @@ import (
 	"sync"
 	"time"
 
-	"gollow/core/storage"
-	"gollow/sources"
-	"gollow/util"
+	"github.com/gollow/core/storage"
+	"github.com/gollow/sources"
+	"github.com/gollow/util"
 )
 
 //GenerateDiff interface to generate and save the diff

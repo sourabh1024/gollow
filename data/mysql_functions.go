@@ -20,7 +20,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql" // mysql driver package
 	"golang.org/x/net/context"
-	"gollow/logging"
+	"github.com/gollow/logging"
 	"reflect"
 	"sync"
 	"sync/atomic"
