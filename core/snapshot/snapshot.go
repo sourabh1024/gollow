@@ -15,7 +15,7 @@
 // Package snapshot provides all the methods related to Snapshot and Version handling
 package snapshot
 
-import "github.com/gollow/sources"
+import "github.com/sourabh1024/gollow/sources"
 
 // Snapshot represents the snapshot being produced
 // Snapshot interface provides methods to load and

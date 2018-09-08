@@ -3,12 +3,12 @@ package main
 import (
 	"golang.org/x/net/context"
 
-	"github.com/gollow/cache"
-	"github.com/gollow/core/snapshot"
-	"github.com/gollow/gollow-demo/cache/client_datamodel"
-	"github.com/gollow/gollow-demo/config"
-	"github.com/gollow/gollow-demo/server"
-	"github.com/gollow/sources/datamodel/dummy"
+	"github.com/sourabh1024/gollow/cache"
+	"github.com/sourabh1024/gollow/core/snapshot"
+	"github.com/sourabh1024/gollow/gollow-demo/cache/client_datamodel"
+	"github.com/sourabh1024/gollow/gollow-demo/config"
+	"github.com/sourabh1024/gollow/gollow-demo/server"
+	"github.com/sourabh1024/gollow/sources/datamodel/dummy"
 )
 
 func main() {

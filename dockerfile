@@ -1,5 +1,4 @@
-FROM golang:1.8.3
-
+FROM golang:1.8.3 as gollow
 
 ENV MYSQL_HOST $MYSQL_HOST
 ENV MYSQL_PORT $MYSQL_PORT
@@ -10,18 +9,24 @@ ENV AWS_SECRET_ACCESS_KEY $AWS_SECRET_ACCESS_KEY
 
 # load config json
 CMD if [ ${APP_ENV} = production ]; \
-	then \
-	ENV GOLLOW_CF ../config.development.json; \
-	else \
-	ENV GOLLOW_CF ../config.json; \
-	fi
+        then \
+        ENV GOLLOW_CF ../config.development.json; \
+        else \
+        ENV GOLLOW_CF ../config.json; \
+        fi
 
+#RUN mkdir /gollow
+#ADD . /gollow/
+#WORKDIR /gollow
 
+#RUN go build -o main .
 
-RUN mkdir -p /gollow
+#CMD ["/gollow/main"]
 
-WORKDIR /gollow
+WORKDIR /go/src/app
+COPY . .
 
-COPY . ./
+RUN go get ./
+RUN go build -o main .
 
-CMD ["gollow/main"]
+CMD ["main"]

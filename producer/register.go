@@ -14,7 +14,7 @@
 
 package producer
 
-import "github.com/gollow/sources"
+import "github.com/sourabh1024/gollow/sources"
 
 var (
 	models modelsImpl

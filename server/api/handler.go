@@ -2,8 +2,8 @@ package api
 
 import (
 	"golang.org/x/net/context"
-	"github.com/gollow/core/snapshot"
-	"github.com/gollow/logging"
+	"github.com/sourabh1024/gollow/core/snapshot"
+	"github.com/sourabh1024/gollow/logging"
 )
 
 // Server represents the gRPC server

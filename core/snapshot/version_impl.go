@@ -16,8 +16,8 @@ package snapshot
 
 import (
 	"encoding/json"
-	"github.com/gollow/core/storage"
-	"github.com/gollow/data"
+	"github.com/sourabh1024/gollow/core/storage"
+	"github.com/sourabh1024/gollow/data"
 	"regexp"
 	"strconv"
 	"sync"

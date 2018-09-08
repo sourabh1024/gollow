@@ -15,7 +15,7 @@
 package cache
 
 import (
-	"github.com/gollow/sources"
+	"github.com/sourabh1024/gollow/sources"
 	"sync"
 )
 

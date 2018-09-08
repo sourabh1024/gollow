@@ -17,7 +17,7 @@ package util
 import (
 	"fmt"
 	"time"
-	"github.com/gollow/logging"
+	"github.com/sourabh1024/gollow/logging"
 )
 
 func Duration(invocation time.Time, name string) {

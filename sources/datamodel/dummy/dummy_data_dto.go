@@ -18,12 +18,12 @@ import (
 	"context"
 	"strconv"
 	"time"
-	"github.com/gollow/data"
-	"github.com/gollow/sources"
-	"github.com/gollow/util"
-	"github.com/gollow/logging"
-	"github.com/gollow/config"
-	"github.com/gollow/util/profile"
+	"github.com/sourabh1024/gollow/data"
+	"github.com/sourabh1024/gollow/sources"
+	"github.com/sourabh1024/gollow/util"
+	"github.com/sourabh1024/gollow/logging"
+	"github.com/sourabh1024/gollow/config"
+	"github.com/sourabh1024/gollow/util/profile"
 )
 
 //var _ sources.DataModel = &DataDTO{}

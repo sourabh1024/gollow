@@ -16,8 +16,8 @@ package snapshot
 
 import (
 	"github.com/golang/protobuf/proto"
-	"github.com/gollow/core/storage"
-	"github.com/gollow/sources"
+	"github.com/sourabh1024/gollow/core/storage"
+	"github.com/sourabh1024/gollow/sources"
 	"sync"
 )
 

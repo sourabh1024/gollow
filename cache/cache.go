@@ -17,9 +17,9 @@ package cache
 
 import (
 	"fmt"
-	"github.com/gollow/logging"
-	"github.com/gollow/sources"
-	"github.com/gollow/util"
+	"github.com/sourabh1024/gollow/logging"
+	"github.com/sourabh1024/gollow/sources"
+	"github.com/sourabh1024/gollow/util"
 	"time"
 )
 
