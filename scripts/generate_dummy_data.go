@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gollow/config"
-	"github.com/gollow/data"
-	"github.com/gollow/logging"
-	"github.com/gollow/sources/datamodel/dummy"
+	"github.com/sourabh1024/gollow/config"
+	"github.com/sourabh1024/gollow/data"
+	"github.com/sourabh1024/gollow/logging"
+	"github.com/sourabh1024/gollow/sources/datamodel/dummy"
 	"strings"
 )
 
@@ -16,7 +16,7 @@ func insertIntoDummyData(numOfRows int) {
 		dummyData := &dummy.DataDTO{ID: int64(i), FirstName: "suman", LastName: "sourabh", Balance: 10.0, MaxCredit: 5.0, MaxDebit: 3.0, Score: 1.0, IsActive: true}
 		datas = append(datas, dummyData)
 	}
-	err := BulkInsert(datas)
+	err := bulkInsert(datas)
 	if err != nil {
 		logging.GetLogger().Error("error in inserting into mysql with err : %v", err)
 	}
@@ -25,7 +25,7 @@ func main() {
 	insertIntoDummyData(2)
 }
 
-func BulkInsert(unsavedRows []*dummy.DataDTO) error {
+func bulkInsert(unsavedRows []*dummy.DataDTO) error {
 	valueStrings := make([]string, 0, len(unsavedRows))
 	valueArgs := make([]interface{}, 0)
 	i := 0

@@ -23,14 +23,18 @@ import (
 	"os"
 )
 
+
 const (
+	// ENV_VAR the environment variable from where config is read
 	ENV_VAR = "GOLLOW_DEMO_CF"
 )
 
 var (
+	// GlobalConfig is the globally accesible config initialised during init
 	GlobalConfig *Config
 )
 
+// Config for running gollow demo
 type Config struct {
 	AnnouncedVersion string         `json:"announcedVersion"`
 	Storage          *StorageConfig `json:"storage"`
@@ -38,6 +42,7 @@ type Config struct {
 	ServerHttpPort   int            `json:"serverHttpPort"`
 }
 
+// StorageConfig stores the config for storage used
 type StorageConfig struct {
 	StorageType      string `json:"storageType"`
 	AnnouncedVersion string `json:"announcedVersion"`

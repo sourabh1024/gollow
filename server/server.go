@@ -84,8 +84,8 @@ func Init() {
 
 	logging.GetLogger().Info("Starting server...")
 
-	restAddress := fmt.Sprintf("%s:%d", "localhost", config.GlobalConfig.ProducerRPCPort)
-	grpcAddress := fmt.Sprintf("%s:%d", "localhost", config.GlobalConfig.ProducerHttpPort)
+	restAddress := fmt.Sprintf("%s:%d", "127.0.0.1", config.GlobalConfig.ProducerHttpPort)
+	grpcAddress := fmt.Sprintf("%s:%d", "127.0.0.1", config.GlobalConfig.ProducerRPCPort)
 
 	go func() {
 		err := startGRPCServer(grpcAddress)

@@ -12,6 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
+// Package client_datamodel provides Cache for DummyData Cache which is populated by gollow
 package client_datamodel
 
 import (

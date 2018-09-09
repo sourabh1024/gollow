@@ -57,6 +57,7 @@ func ProduceModel(model sources.DataModel) {
 	defer util.Duration(time.Now(), fmt.Sprintf("ProduceModel for : %s", model.GetDataName()))
 
 	logging.GetLogger().Info("Starting data producing for : %s ", model.GetDataName())
+	logging.GetLogger().Info("Starting suman producing for : %s ", model.GetDataName())
 
 	lastAnnouncedSnapshot, err := snapshot.VersionImpl.GetVersion(model.GetDataName())
 	if err != nil && err != data.ErrNoData {

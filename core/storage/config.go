@@ -14,6 +14,7 @@
 
 package storage
 
+// Config config holds the information related to storage configs
 type Config struct {
 	Region string `json:"region"`
 	Bucket string `json:"bucket"`

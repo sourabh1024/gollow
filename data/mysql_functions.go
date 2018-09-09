@@ -117,7 +117,7 @@ func NewMySQLConnectionRef() *mySQLConnectionImpl {
 }
 
 // QueryRows queries the row with passed params
-func (mySqlConnection *mySQLConnectionImpl) QueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, args ...interface{}) ([]interface{}, error) {
+func (mySQLConnection *mySQLConnectionImpl) QueryRows(ctx context.Context, config *MysqlConfig, query string, reference interface{}, args ...interface{}) ([]interface{}, error) {
 
 	pendingRequests := atomic.AddInt64(&config.PendingCalls, 1)
 	defer atomic.AddInt64(&config.PendingCalls, -1)

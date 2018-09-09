@@ -12,6 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
+// Package client_api provides api for client uses
 package client_api
 
 import (
@@ -31,6 +32,7 @@ func (s *Server) SayHello(ctx context.Context, in *PingMessage) (*PingMessage, e
 	return &PingMessage{Greeting: "bar"}, nil
 }
 
+// GetDummyData generates response to GetDummyData
 func (s *Server) GetDummyData(ctx context.Context, in *DummyDataRequest) (*DummyDataResponse, error) {
 	logging.GetLogger().Info("Received request GetDummyData for %s", in.Keyname)
 	response := &DummyDataResponse{}

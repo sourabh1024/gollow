@@ -23,6 +23,7 @@ import (
 	"github.com/sourabh1024/gollow/logging"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 const (
@@ -93,5 +94,14 @@ func loadEnvFromJSON(envVar string, config interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	configString := string(bytes)
+	logging.GetLogger().Info("MYSQL_HOST : %s", os.Getenv("MYSQL_HOST"))
+
+	if mysqlServer := os.Getenv("MYSQL_HOST"); mysqlServer != "" {
+		configString = strings.Replace(configString, "$MYSQL_HOST", mysqlServer, -1)
+	}
+
+	bytes = []byte(configString)
 	return json.Unmarshal(bytes, config)
 }

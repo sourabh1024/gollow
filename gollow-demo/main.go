@@ -21,12 +21,14 @@ func main() {
 	server.ServerInit(ctx)
 }
 
+// Init initialises the snapshot and start cache refresh
 func Init(ctx context.Context) {
 	//init everything here...
 	snapshot.InitVersionStorage(config.GlobalConfig.Storage.AnnouncedVersion)
 	cache.RefreshCaches(ctx)
 }
 
+// RegisterDataModels registers data models to be consumed
 func RegisterDataModels() {
 	cache.Register(&dummy.DummyData{}, client_datamodel.DummyDataCache)
 }

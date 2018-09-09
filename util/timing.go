@@ -20,11 +20,13 @@ import (
 	"github.com/sourabh1024/gollow/logging"
 )
 
+// Duration prints the time elasped from the invocation time
 func Duration(invocation time.Time, name string) {
 	elapsed := time.Since(invocation)
 	logging.GetLogger().Info("%s lasted %s", name, elapsed)
 }
 
+// GetCurrentTimeString returns current time stamp in milli seconds in string format
 func GetCurrentTimeString() string {
 	return fmt.Sprintf("%d", time.Now().UnixNano()/int64(time.Millisecond))
 }

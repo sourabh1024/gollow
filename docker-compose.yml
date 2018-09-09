@@ -1,6 +1,37 @@
-version: "3"
+version: '3.0'
 services:
-  prometheus:
-    image: quay.io/prometheus/prometheus:latest
+  producer:
+    build: .
+    command: ./main
     ports:
-     - 9090:9090
+      - "7777:7777"
+      - "7778:7778"
+      - "2223:2223"
+      - "2222:2222"
+    environment:
+      - GOLLOW_CF
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - MYSQL_HOST
+      - MYSQL_PORT
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - MYSQL_ROOT_PASSWORD
+    depends_on:
+      - db
+
+  db:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+    ports:
+    - 3306:3306
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+    - 8055:8080

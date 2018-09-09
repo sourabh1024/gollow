@@ -19,6 +19,7 @@ import (
 	"github.com/sourabh1024/gollow/logging"
 )
 
+// GetMemoryProfile prints the current memory profile of the system
 func GetMemoryProfile() {
 
 	var mem runtime.MemStats

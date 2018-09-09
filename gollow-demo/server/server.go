@@ -11,6 +11,8 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
+
+// Package server provides method to start grpc and http server for demo of gollow
 package server
 
 import (
