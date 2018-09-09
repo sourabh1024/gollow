@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-// Duration prints the time elasped from the invocation time
+// Duration prints the time elapsed from the invocation time
 func Duration(invocation time.Time, name string) {
 	elapsed := time.Since(invocation)
 	logging.GetLogger().Info("%s lasted %s", name, elapsed)

@@ -53,7 +53,7 @@ func init() {
 	logging.GetLogger().Info("Config initialised")
 	err := loadEnvFromJSON(ENV_VAR, &GlobalConfig)
 	if err != nil {
-		panic(errors.New(fmt.Sprintf("error in loading the config : %v", err)))
+		panic(fmt.Errorf("error in loading the config : %v", err))
 	}
 }
 

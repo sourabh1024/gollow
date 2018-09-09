@@ -36,7 +36,7 @@ func RefreshCaches(ctx context.Context) {
 		go InitCache(ctx, model, cache)
 		ticker := time.NewTicker(time.Duration(model.CacheDuration()))
 		quit := make(chan struct{})
-		go func() {
+		go func(ctx context.Context, model sources.DataModel, cache GollowCache) {
 			for {
 				select {
 				case <-ticker.C:
@@ -48,7 +48,7 @@ func RefreshCaches(ctx context.Context) {
 					return
 				}
 			}
-		}()
+		}(ctx, model, cache)
 	}
 	logging.GetLogger().Info("Waiting for first snapshot to be fetched")
 	wg.Wait()

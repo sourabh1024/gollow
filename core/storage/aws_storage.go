@@ -35,14 +35,14 @@ type s3API interface {
 	PutObjectRequest(*s3.PutObjectInput) (*request.Request, *s3.PutObjectOutput)
 }
 
-// client is the wrapper for the aws s3 client
+// S3Storage is the wrapper for the aws s3 client
 type S3Storage struct {
 	client s3API
 	bucket string
 	key    string
 }
 
-// NewS3Client constructs a new s3 client
+// NewS3Storage constructs a new s3 client
 func NewS3Storage(s3Config *Config, cfgs ...*aws.Config) (*S3Storage, error) {
 	config := &aws.Config{
 		Region: aws.String(s3Config.Region),
@@ -65,7 +65,7 @@ func NewS3Storage(s3Config *Config, cfgs ...*aws.Config) (*S3Storage, error) {
 	return instance, nil
 }
 
-// IsObjectExist retrieves metadata from an object to verify whether object exists
+// IsExist retrieves metadata from an object to verify whether object exists
 func (storage *S3Storage) IsExist() bool {
 	headObjectInput := &s3.HeadObjectInput{
 		Bucket: &storage.bucket,
