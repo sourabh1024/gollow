@@ -23,7 +23,6 @@ import (
 	"os"
 )
 
-
 const (
 	// ENV_VAR the environment variable from where config is read
 	ENV_VAR = "GOLLOW_DEMO_CF"

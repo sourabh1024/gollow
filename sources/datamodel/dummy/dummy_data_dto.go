@@ -16,14 +16,14 @@ package dummy
 
 import (
 	"context"
-	"strconv"
-	"time"
+	"github.com/sourabh1024/gollow/config"
 	"github.com/sourabh1024/gollow/data"
+	"github.com/sourabh1024/gollow/logging"
 	"github.com/sourabh1024/gollow/sources"
 	"github.com/sourabh1024/gollow/util"
-	"github.com/sourabh1024/gollow/logging"
-	"github.com/sourabh1024/gollow/config"
 	"github.com/sourabh1024/gollow/util/profile"
+	"strconv"
+	"time"
 )
 
 //var _ sources.DataModel = &DataDTO{}

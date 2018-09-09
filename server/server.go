@@ -15,13 +15,16 @@
 package server
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"golang.org/x/net/context"
 	"github.com/sourabh1024/gollow/config"
 	"github.com/sourabh1024/gollow/logging"
 	"github.com/sourabh1024/gollow/server/api"
+
 	"google.golang.org/grpc"
+
 	"net"
 	"net/http"
 )

@@ -19,8 +19,8 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql" // mysql driver package
-	"golang.org/x/net/context"
 	"github.com/sourabh1024/gollow/logging"
+	"golang.org/x/net/context"
 	"reflect"
 	"sync"
 	"sync/atomic"

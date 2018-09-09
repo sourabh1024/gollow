@@ -15,8 +15,8 @@
 package profile
 
 import (
-	"runtime"
 	"github.com/sourabh1024/gollow/logging"
+	"runtime"
 )
 
 // GetMemoryProfile prints the current memory profile of the system

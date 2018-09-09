@@ -16,10 +16,10 @@ package main
 
 import (
 	"context"
-	"github.com/sourabh1024/gollow/server"
-	"github.com/sourabh1024/gollow/core/snapshot"
 	"github.com/sourabh1024/gollow/config"
+	"github.com/sourabh1024/gollow/core/snapshot"
 	"github.com/sourabh1024/gollow/producer"
+	"github.com/sourabh1024/gollow/server"
 	"github.com/sourabh1024/gollow/sources/datamodel/dummy"
 )
 

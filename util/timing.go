@@ -16,8 +16,8 @@ package util
 
 import (
 	"fmt"
-	"time"
 	"github.com/sourabh1024/gollow/logging"
+	"time"
 )
 
 // Duration prints the time elasped from the invocation time
